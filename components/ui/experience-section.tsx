@@ -36,7 +36,7 @@ export function ExperienceSection() {
         </span>
       }
     >
-      <div className="relative p-5 sm:p-7">
+      <div className="relative p-4 sm:p-7">
         {/* Vertical timeline spine */}
         <div
           aria-hidden="true"
@@ -84,7 +84,7 @@ export function ExperienceSection() {
                     </div>
                   )}
 
-                  <div className="space-y-1">
+                  <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex flex-wrap items-center gap-2.5">
                       <span className="font-space-mono text-xs text-brand">
                         {String(jobIndex + 1).padStart(2, "0")}

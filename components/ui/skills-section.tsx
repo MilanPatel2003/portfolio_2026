@@ -143,8 +143,8 @@ export function SkillsSection() {
       filename="toolbox.json"
       type="JSON"
       action={
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative flex items-center">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start sm:gap-3">
+          <div className="relative flex min-w-0 flex-1 items-center sm:flex-initial">
             <Search className="pointer-events-none absolute left-2 h-3 w-3 text-muted-foreground" />
             <input
               type="text"
@@ -152,7 +152,7 @@ export function SkillsSection() {
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Filter stack..."
               aria-label="Filter technical skills"
-              className="h-7 w-36 border border-border bg-background pr-6 pl-7 font-mono text-[11px] text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus:w-44 focus:border-brand focus:outline-none"
+              className="h-8 w-full border border-border bg-background pr-6 pl-7 font-mono text-[11px] text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus:border-brand focus:outline-none sm:h-7 sm:w-36 sm:focus:w-44"
             />
             {query && (
               <button
@@ -182,7 +182,10 @@ export function SkillsSection() {
               Core Production Stack
             </span>
             <span className="font-mono text-[11px] text-muted-foreground">
-              Click any skill below to inspect usage
+              <span className="sm:hidden">Tap any skill to inspect</span>
+              <span className="hidden sm:inline">
+                Click any skill below to inspect usage
+              </span>
             </span>
           </div>
 
@@ -275,7 +278,7 @@ export function SkillsSection() {
                         type="button"
                         onClick={() => setSelectedSkill(item)}
                         aria-pressed={isSelected}
-                        className={`group/chip inline-flex items-center gap-2 border px-3 py-1.5 font-mono text-xs transition-all duration-150 focus-visible:outline-1 focus-visible:outline-brand ${
+                        className={`group/chip inline-flex items-center gap-2 border px-3 py-2 font-mono text-xs transition-all duration-150 focus-visible:outline-1 focus-visible:outline-brand sm:py-1.5 ${
                           isSelected
                             ? "border-brand bg-brand/12 text-foreground shadow-[2px_2px_0_var(--brand)]"
                             : isSearchMatch

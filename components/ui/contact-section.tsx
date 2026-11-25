@@ -47,7 +47,7 @@ export function ContactSection() {
         </span>
       }
     >
-      <div className="p-5 sm:p-7">
+      <div className="p-4 sm:p-7">
         <div className="max-w-2xl space-y-2">
           <h3 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
             Let&apos;s build something scalable together.

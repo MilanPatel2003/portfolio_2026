@@ -86,7 +86,7 @@ function ProjectPreviewFrame({
       </div>
 
       {/* Visual Canvas */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted/20">
+      <div className="relative min-h-[215px] w-full overflow-hidden bg-muted/20 sm:aspect-[16/9] sm:min-h-0">
         {project.previewImage ? (
           <>
             <Image
@@ -105,7 +105,7 @@ function ProjectPreviewFrame({
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 border border-border bg-background/95 px-2.5 py-1 font-mono text-[11px] font-medium text-foreground opacity-0 shadow-md transition-all duration-200 group-hover/frame:opacity-100 hover:border-brand hover:text-brand"
+                className="absolute right-3 bottom-3 inline-flex items-center gap-1.5 border border-border bg-background/95 px-2.5 py-1 font-mono text-[11px] font-medium text-foreground opacity-100 shadow-md transition-all duration-200 hover:border-brand hover:text-brand sm:opacity-0 sm:group-hover/frame:opacity-100"
               >
                 <span>Open {project.liveLabel || "Live"}</span>
                 <ArrowUpRight className="h-3 w-3" />
@@ -201,12 +201,12 @@ export function ProjectsSection() {
       filename={`projects.ts (${visibleProjects.length})`}
       type="TS"
       action={
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
           {/* Category Filter Pills */}
           <div
             role="tablist"
             aria-label="Filter projects by category"
-            className="flex flex-wrap items-center gap-1"
+            className="no-scrollbar flex max-w-full items-center gap-1 overflow-x-auto pb-0.5 sm:flex-wrap sm:overflow-visible sm:pb-0"
           >
             {CATEGORIES.map((category) => {
               const active = selectedCategory === category;
@@ -229,7 +229,7 @@ export function ProjectsSection() {
                       setActiveTitle(nextList[0].title);
                     }
                   }}
-                  className={`border px-2 py-1 font-mono text-[11px] transition-colors duration-150 ${
+                  className={`shrink-0 border px-2.5 py-1.5 font-mono text-[11px] transition-colors duration-150 sm:px-2 sm:py-1 ${
                     active
                       ? "border-brand bg-brand/10 text-brand"
                       : "border-transparent text-muted-foreground hover:text-foreground"
@@ -287,9 +287,9 @@ export function ProjectsSection() {
     >
       {viewMode === "showcase" && currentProject ? (
         <div className="grid grid-cols-1 divide-y divide-border lg:grid-cols-12 lg:divide-x lg:divide-y-0">
-          {/* Left Index Rail */}
+          {/* Desktop Left Index Rail */}
           <div
-            className="flex flex-col justify-between lg:col-span-5"
+            className="hidden flex-col justify-between lg:col-span-5 lg:flex"
             onKeyDown={(event) => {
               if (event.key === "ArrowDown") {
                 event.preventDefault();
@@ -401,8 +401,60 @@ export function ProjectsSection() {
             </div>
           </div>
 
-          {/* Right Showcase Stage */}
-          <div className="flex flex-col justify-between gap-5 p-4 sm:p-6 lg:col-span-7">
+          {/* Active Showcase Stage (shown immediately on mobile with compact switcher bar) */}
+          <div className="flex min-w-0 flex-col justify-between gap-5 p-4 sm:p-6 lg:col-span-7">
+            {/* Mobile & Tablet Horizontal Switcher */}
+            <div className="space-y-2.5 lg:hidden">
+              <div className="flex items-center justify-between gap-2 font-mono text-[11px] text-muted-foreground">
+                <span>
+                  Project {String(activeIndex + 1).padStart(2, "0")} /{" "}
+                  {String(visibleProjects.length).padStart(2, "0")}
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => stepProject(-1)}
+                    aria-label="Previous project"
+                    className="inline-flex h-8 w-8 items-center justify-center border border-border bg-background transition-colors hover:border-brand hover:text-foreground"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => stepProject(1)}
+                    aria-label="Next project"
+                    className="inline-flex h-8 w-8 items-center justify-center border border-border bg-background transition-colors hover:border-brand hover:text-foreground"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto pb-1">
+                {visibleProjects.map((project, index) => {
+                  const isActive = project.title === currentProject.title;
+                  return (
+                    <button
+                      key={project.title}
+                      type="button"
+                      onClick={() => setActiveTitle(project.title)}
+                      aria-current={isActive ? "true" : undefined}
+                      className={`inline-flex shrink-0 items-center gap-1.5 border px-2.5 py-1.5 font-mono text-[11px] transition-colors ${
+                        isActive
+                          ? "border-brand bg-brand/12 font-semibold text-foreground"
+                          : "border-border bg-background text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <span className={isActive ? "text-brand" : "opacity-65"}>
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+                      <span>{project.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="space-y-5">
               <ProjectPreviewFrame project={currentProject} />
 

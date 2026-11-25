@@ -195,7 +195,10 @@ export function GitHubActivity({ fit = false }: { fit?: boolean }) {
       {tip && (
         <div
           className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full border border-border bg-popover px-2.5 py-1 font-space-mono text-xs whitespace-nowrap text-popover-foreground shadow-lg"
-          style={{ left: tip.x, top: tip.y - 8 }}
+          style={{
+            left: `clamp(90px, ${tip.x}px, calc(100vw - 90px))`,
+            top: tip.y - 8,
+          }}
         >
           {tip.text}
         </div>

@@ -78,10 +78,13 @@ export function HeroSection() {
   const linkedinLink = hero.socialLinks.find((item) => item.name === "LinkedIn");
 
   return (
-    <section id="top" className="intro-stage-expand pt-8 pb-8 sm:pt-12 sm:pb-10">
-      <div className="grid items-start gap-8 lg:grid-cols-[1.3fr_1fr] lg:gap-10">
+    <section
+      id="top"
+      className="intro-stage-expand pt-4 pb-6 sm:pt-10 sm:pb-10"
+    >
+      <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-[1.3fr_1fr] lg:gap-10">
         {/* Left: Executive narrative & tactile CTAs */}
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-5 sm:space-y-6">
           <div className="inline-flex flex-wrap items-center gap-2 border border-border bg-card/70 px-3 py-1.5 font-space-mono text-xs text-muted-foreground">
             <span className="relative flex h-2 w-2" aria-hidden="true">
               <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
@@ -117,7 +120,7 @@ export function HeroSection() {
             {hero.summary}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-2.5 pt-1 sm:gap-3">
             <a
               href="#contact"
               className="group/cta inline-flex h-10 items-center gap-2 border border-brand bg-brand px-4 font-space-mono text-xs font-bold text-brand-foreground transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_var(--foreground)] active:translate-x-0 active:translate-y-0 active:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
@@ -129,17 +132,17 @@ export function HeroSection() {
             <button
               type="button"
               onClick={() => copyValue("email", hero.email)}
-              className="inline-flex h-10 items-center gap-2 border border-border bg-background px-4 font-space-mono text-xs text-foreground transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-brand hover:text-brand hover:shadow-[3px_3px_0_var(--brand)] active:translate-x-0 active:translate-y-0 active:shadow-none focus-visible:border-brand focus-visible:outline-none"
+              className="inline-flex h-10 max-w-full items-center gap-2 border border-border bg-background px-3.5 font-space-mono text-xs text-foreground transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-brand hover:text-brand hover:shadow-[3px_3px_0_var(--brand)] active:translate-x-0 active:translate-y-0 active:shadow-none focus-visible:border-brand focus-visible:outline-none sm:px-4"
             >
               {copied === "email" ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-brand" />
+                  <Check className="h-3.5 w-3.5 shrink-0 text-brand" />
                   <span>Copied Email</span>
                 </>
               ) : (
                 <>
-                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span>{hero.email}</span>
+                  <Copy className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span className="truncate">{hero.email}</span>
                 </>
               )}
             </button>
@@ -175,7 +178,7 @@ export function HeroSection() {
         {/* Right: Multi-tab Interactive Developer Inspector */}
         <aside
           aria-label="Developer profile inspector"
-          className="workspace-file overflow-hidden shadow-xs"
+          className="workspace-file min-w-0 overflow-hidden shadow-xs"
         >
           <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 pt-2 font-space-mono text-[11px]">
             <div
@@ -211,7 +214,7 @@ export function HeroSection() {
             </span>
           </header>
 
-          <div className="min-h-[256px] overflow-x-auto p-4 font-space-mono text-xs leading-relaxed sm:p-5 sm:text-[13px]">
+          <div className="min-h-[240px] overflow-x-auto p-3.5 font-space-mono text-[11px] leading-relaxed sm:min-h-[256px] sm:p-5 sm:text-[13px]">
             {activeTab === "profile.ts" && (
               <div>
                 <CodeLine lineNumber={1}>
@@ -389,11 +392,11 @@ export function HeroSection() {
                 <CodeLine lineNumber={5}>
                   <span className="text-brand">$</span> contact --copy
                 </CodeLine>
-                <div className="flex flex-wrap gap-2 pl-8 pt-1">
+                <div className="flex flex-wrap gap-2 pl-4 pt-1 sm:pl-8">
                   <button
                     type="button"
                     onClick={() => copyValue("email", hero.email)}
-                    className="inline-flex items-center gap-1.5 border border-border bg-background px-2.5 py-1 text-[11px] text-foreground transition-colors hover:border-brand hover:text-brand"
+                    className="inline-flex items-center gap-1.5 border border-border bg-background px-3 py-2 text-[11px] text-foreground transition-colors hover:border-brand hover:text-brand sm:px-2.5 sm:py-1"
                   >
                     {copied === "email" ? (
                       <Check className="h-3 w-3 text-brand" />
@@ -407,7 +410,7 @@ export function HeroSection() {
                   <button
                     type="button"
                     onClick={() => copyValue("phone", hero.phone)}
-                    className="inline-flex items-center gap-1.5 border border-border bg-background px-2.5 py-1 text-[11px] text-foreground transition-colors hover:border-brand hover:text-brand"
+                    className="inline-flex items-center gap-1.5 border border-border bg-background px-3 py-2 text-[11px] text-foreground transition-colors hover:border-brand hover:text-brand sm:px-2.5 sm:py-1"
                   >
                     {copied === "phone" ? (
                       <Check className="h-3 w-3 text-brand" />

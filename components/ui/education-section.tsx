@@ -24,8 +24,8 @@ export function EducationSection() {
           <div className="space-y-3">
             {education.map((edu) => (
               <SpotlightCard key={edu.degree} className="p-3.5">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-start gap-3">
+                <div className="flex flex-col items-start justify-between gap-2.5 sm:flex-row">
+                  <div className="flex min-w-0 items-start gap-3">
                     {edu.logo && (
                       <div className="mt-0.5 flex h-9 w-12 shrink-0 items-center justify-center border border-border bg-white p-1">
                         <Image
@@ -37,7 +37,7 @@ export function EducationSection() {
                         />
                       </div>
                     )}
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="text-sm font-bold text-foreground sm:text-base">
                         {edu.degree}
                       </h3>
@@ -49,7 +49,7 @@ export function EducationSection() {
                       </p>
                     </div>
                   </div>
-                  <span className="shrink-0 border border-brand/50 bg-brand/10 px-2 py-0.5 font-space-mono text-[11px] font-semibold text-brand">
+                  <span className="shrink-0 self-start border border-brand/50 bg-brand/10 px-2 py-0.5 font-space-mono text-[11px] font-semibold text-brand">
                     CGPA: {edu.cgpa}
                   </span>
                 </div>
@@ -68,7 +68,7 @@ export function EducationSection() {
             {certificates.map((cert) => (
               <li
                 key={cert.title}
-                className="flex items-center justify-between gap-3 border-b border-border/50 pb-2.5 last:border-b-0 last:pb-0"
+                className="flex flex-col items-start justify-between gap-2 border-b border-border/50 pb-2.5 last:border-b-0 last:pb-0 sm:flex-row sm:items-center sm:gap-3"
               >
                 {cert.url ? (
                   <a

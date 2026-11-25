@@ -32,7 +32,7 @@ export default function Home() {
 
       <PortfolioNav />
 
-      <main className="mx-auto max-w-6xl space-y-10 px-4 pb-12 sm:space-y-12 sm:px-6 sm:pb-16 lg:px-8">
+      <main className="mx-auto max-w-6xl min-w-0 space-y-8 px-3.5 pb-10 sm:space-y-12 sm:px-6 sm:pb-16 lg:px-8">
         <HeroSection />
 
         <ExperienceSection />
@@ -41,12 +41,12 @@ export default function Home() {
 
         <SkillsSection />
 
-        <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-5">
+        <div className="grid grid-cols-1 items-stretch gap-6 sm:gap-8 lg:grid-cols-12">
+          <div className="min-w-0 lg:col-span-5">
             <EducationSection />
           </div>
 
-          <div className="lg:col-span-7">
+          <div className="min-w-0 lg:col-span-7">
             <WorkspaceFile
               id="activity"
               title="GitHub Activity"
@@ -95,7 +95,9 @@ export default function Home() {
               |
             </span>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <span>Press ⌘K for command palette &amp; lo-fi audio</span>
+              <span className="hidden sm:inline">
+                Press ⌘K for command palette &amp; lo-fi audio
+              </span>
               <a href="#top" className="text-brand hover:underline">
                 Back to top ↑
               </a>

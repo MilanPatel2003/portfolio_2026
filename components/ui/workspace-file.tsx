@@ -24,7 +24,9 @@ export function WorkspaceFile({
         <span aria-hidden="true" className="text-brand">{type}</span>
         <h2 id={`${id}-heading`}>{title}</h2>
         <span className="workspace-file-path">{filename}</span>
-        {action && <div className="ml-auto shrink-0">{action}</div>}
+        {action && (
+          <div className="w-full min-w-0 sm:ml-auto sm:w-auto">{action}</div>
+        )}
       </header>
       <div className="workspace-file-body flex-1">{children}</div>
     </section>
