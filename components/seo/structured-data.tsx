@@ -10,11 +10,19 @@ export function StructuredData() {
   const personId = `${baseUrl}/#person`;
   const currentJob = workExperience.find((job) => job.current) ?? workExperience[0];
 
-  const sameAsLinks = [
-    ...hero.socialLinks.map((link) => link.href),
-    ...projects.map((project) => project.liveUrl).filter(Boolean),
-    ...projects.map((project) => project.githubUrl).filter(Boolean),
-  ];
+  const sameAsLinks = Array.from(
+    new Set(
+      [
+        ...hero.socialLinks.map((link) => link.href),
+        ...projects.map((project) => project.liveUrl),
+        ...projects.map((project) => project.githubUrl),
+        ...(site.resumeUrl ? [site.resumeUrl] : []),
+      ].filter((href): href is string => {
+        if (!href) return false;
+        return /^https?:\/\//i.test(href) && href.replace(/\/$/, "") !== baseUrl;
+      }),
+    ),
+  );
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -70,8 +78,7 @@ export function StructuredData() {
         knowsAbout: Array.from(
           new Set(skillGroups.flatMap((group) => group.items)),
         ),
-        sameAs: Array.from(new Set(sameAsLinks)),
-        ...(site.resumeUrl ? { mainEntityOfPage: site.resumeUrl } : {}),
+        sameAs: sameAsLinks,
       },
       {
         "@type": "ItemList",
