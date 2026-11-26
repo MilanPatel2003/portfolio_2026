@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   Check,
   Copy,
+  FileText,
   Github,
   Linkedin,
   MapPin,
@@ -169,6 +170,19 @@ export function HeroSection() {
               >
                 <Linkedin className="h-3.5 w-3.5" />
                 <span>LinkedIn</span>
+                <ArrowUpRight className="h-3 w-3 transition-transform duration-150 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+              </a>
+            )}
+
+            {site.resumeUrl && (
+              <a
+                href={site.resumeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/link inline-flex h-10 items-center gap-1.5 border border-border bg-background px-3.5 font-space-mono text-xs text-foreground transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-brand hover:text-brand hover:shadow-[3px_3px_0_var(--brand)] active:translate-x-0 active:translate-y-0 active:shadow-none"
+              >
+                <FileText className="h-3.5 w-3.5 text-brand" />
+                <span>Resume</span>
                 <ArrowUpRight className="h-3 w-3 transition-transform duration-150 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
               </a>
             )}

@@ -4,9 +4,12 @@ export const site = {
     process.env.NEXT_PUBLIC_SITE_URL || "https://milanpatel.vercel.app",
   ),
   name: "Milan Patel",
-  title: "Milan Patel | Full-Stack Developer",
+  title: "Milan Patel — Full-Stack Developer | React, Node.js & PostgreSQL",
   description:
-    "Full-stack developer with 1+ years of experience building scalable web applications across React, Node.js, and PostgreSQL, from payment workflows to serverless backends and LLM-powered AI services.",
+    "Full-Stack Developer & Junior SDE in Ahmedabad with 1+ years of experience building scalable React, Next.js, TypeScript, Node.js, PostgreSQL, Stripe & LLM systems.",
   githubUsername: "MilanPatel2003",
   timezone: "Asia/Kolkata",
+  resumeUrl: process.env.NEXT_PUBLIC_RESUME_URL?.trim() || "",
+  googleSiteVerification:
+    process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim() || "",
 };

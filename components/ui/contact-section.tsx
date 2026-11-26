@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   Check,
   Copy,
+  FileText,
   Github,
   Globe,
   Linkedin,
@@ -15,6 +16,7 @@ import {
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { WorkspaceFile } from "@/components/ui/workspace-file";
 import { hero } from "@/data/data";
+import { site } from "@/lib/site";
 
 export function ContactSection() {
   const [copiedField, setCopiedField] = useState<"email" | "phone" | null>(
@@ -48,15 +50,30 @@ export function ContactSection() {
       }
     >
       <div className="p-4 sm:p-7">
-        <div className="max-w-2xl space-y-2">
-          <h3 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-            Let&apos;s build something scalable together.
-          </h3>
-          <p className="text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
-            Whether you&apos;re looking for a full-stack engineer across React,
-            Node.js, and PostgreSQL, or want to collaborate on webhooks, payment
-            systems, or LLM integrations — feel free to reach out directly.
-          </p>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div className="max-w-2xl space-y-2">
+            <h3 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              Let&apos;s build something scalable together.
+            </h3>
+            <p className="text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+              Whether you&apos;re looking for a full-stack engineer across React,
+              Node.js, and PostgreSQL, or want to collaborate on webhooks, payment
+              systems, or LLM integrations — feel free to reach out directly.
+            </p>
+          </div>
+
+          {site.resumeUrl && (
+            <a
+              href={site.resumeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group/res inline-flex h-10 w-fit shrink-0 items-center gap-2 border border-brand bg-brand/10 px-4 font-space-mono text-xs font-semibold text-brand transition-colors hover:bg-brand hover:text-brand-foreground"
+            >
+              <FileText className="h-3.5 w-3.5" />
+              <span>View Resume</span>
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-150 group-hover/res:translate-x-0.5 group-hover/res:-translate-y-0.5" />
+            </a>
+          )}
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">

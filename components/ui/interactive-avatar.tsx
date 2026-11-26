@@ -207,7 +207,7 @@ export function InteractiveAvatar() {
 
           {/* Foreground avatar cutout with transparent eye holes (z-30) */}
           <Image
-            src="/avatar/milan-avatar-interactive-v3.png"
+            src="/avatar/milan-avatar-interactive-v4.png"
             alt="Milan Patel 3D developer avatar"
             width={256}
             height={256}

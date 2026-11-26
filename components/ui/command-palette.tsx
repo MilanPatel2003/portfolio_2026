@@ -7,6 +7,7 @@ import {
   Briefcase,
   Code2,
   Copy,
+  FileText,
   FolderGit2,
   Github,
   GraduationCap,
@@ -19,6 +20,7 @@ import {
   SunMoon,
 } from "lucide-react";
 import { hero } from "@/data/data";
+import { site } from "@/lib/site";
 import { toggleDarkLightTheme } from "@/lib/theme";
 
 export function CommandPalette() {
@@ -183,6 +185,23 @@ export function CommandPalette() {
 
               <Command.Group>
                 <GroupLabel>QUICK ACTIONS</GroupLabel>
+                {site.resumeUrl && (
+                  <PaletteItem
+                    icon={<FileText className="h-3.5 w-3.5" />}
+                    hint="Drive ↗"
+                    onSelect={() =>
+                      run(() =>
+                        window.open(
+                          site.resumeUrl,
+                          "_blank",
+                          "noopener,noreferrer",
+                        ),
+                      )
+                    }
+                  >
+                    Open Resume
+                  </PaletteItem>
+                )}
                 <PaletteItem
                   icon={<Copy className="h-3.5 w-3.5" />}
                   hint={hero.email}

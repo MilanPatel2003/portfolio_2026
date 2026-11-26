@@ -228,7 +228,7 @@ export function PortfolioNav() {
         >
           <span className="relative flex h-full w-full items-end justify-center overflow-hidden">
             <Image
-              src="/avatar/milan-avatar-nav-v4.png"
+              src="/avatar/milan-avatar-nav-v5.png"
               alt="Milan Patel avatar"
               width={54}
               height={64}

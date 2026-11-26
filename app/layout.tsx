@@ -27,25 +27,87 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: site.url,
-  title: site.title,
+  title: {
+    default: site.title,
+    template: `%s | ${site.name}`,
+  },
+  applicationName: `${site.name} Portfolio`,
   description: site.description,
+  keywords: [
+    "Milan Patel",
+    "Milan Patel portfolio",
+    "Milan Patel developer",
+    "Milan Patel Ahmedabad",
+    "Milan Patel eSparkbiz",
+    "MilanPatel2003",
+    "Full-Stack Developer",
+    "Junior SDE",
+    "React Developer",
+    "Next.js Developer",
+    "TypeScript Developer",
+    "Node.js Developer",
+    "NestJS",
+    "PostgreSQL",
+    "Stripe Integration",
+    "Serverless Backend",
+    "LLM AI Services",
+    "PrepOnyx",
+    "React ScreenFlow",
+    "Innovate Accounting Solutions",
+    "GLS University MCA",
+  ],
   authors: [{ name: site.name, url: site.url.href }],
-  alternates: { canonical: "/" },
+  creator: site.name,
+  publisher: site.name,
+  category: "technology",
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    type: "website",
+    type: "profile",
+    firstName: "Milan",
+    lastName: "Patel",
+    username: site.githubUsername,
     locale: "en_IN",
     url: "/",
     siteName: site.name,
     title: site.title,
     description: site.description,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Milan Patel — Full-Stack Developer",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: site.title,
     description: site.description,
+    images: ["/og-image.png"],
   },
+  ...(site.googleSiteVerification
+    ? { verification: { google: site.googleSiteVerification } }
+    : {}),
   icons: {
-    icon: "/icon.svg",
+    icon: [
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/favicon-48x48.png",
   },
 };
 

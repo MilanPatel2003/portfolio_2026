@@ -78,13 +78,26 @@ test("hero, experience, projects, skills, education and certificates reflect res
     ]),
     ...data.education.map((edu) => edu.logo),
     ...data.projects.map((p) => p.previewImage),
-    "/avatar/milan-avatar-v3.png",
-    "/avatar/milan-avatar-nav-v4.png",
-    "/avatar/milan-avatar-interactive-v3.png",
+    "/avatar/milan-avatar-v4.png",
+    "/avatar/milan-avatar-nav-v5.png",
+    "/avatar/milan-avatar-interactive-v4.png",
+    "/favicon-48x48.png",
+    "/icon-512x512.png",
+    "/og-image.png",
   ].filter(Boolean);
 
   for (const assetPath of logoPaths) {
     const fileUrl = new URL(`../public${assetPath}`, import.meta.url);
     assert.ok(existsSync(fileUrl), `Expected asset file to exist: public${assetPath}`);
   }
+
+  for (const appAsset of ["../app/icon.png", "../app/apple-icon.png"]) {
+    assert.ok(
+      existsSync(new URL(appAsset, import.meta.url)),
+      `Expected app icon to exist: ${appAsset}`,
+    );
+  }
+
+  const envLocal = readFileSync(new URL("../.env.local", import.meta.url), "utf8");
+  assert.match(envLocal, /NEXT_PUBLIC_RESUME_URL=https:\/\/drive\.google\.com\//);
 });

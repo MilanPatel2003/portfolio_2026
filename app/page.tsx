@@ -13,6 +13,7 @@ import { QuickDock } from "@/components/ui/quick-dock";
 import { SkillsSection } from "@/components/ui/skills-section";
 import { TechIcon } from "@/components/ui/tech-icon";
 import { WorkspaceFile } from "@/components/ui/workspace-file";
+import { StructuredData } from "@/components/seo/structured-data";
 import { hero } from "@/data/data";
 import { site } from "@/lib/site";
 
@@ -21,6 +22,7 @@ export const revalidate = 3600;
 export default function Home() {
   return (
     <div className="relative isolate min-h-screen bg-background text-foreground">
+      <StructuredData />
       <IntroCurtain />
       <BGPattern
         className="portfolio-grid-background pointer-events-none fixed inset-0 h-dvh w-full opacity-75"
