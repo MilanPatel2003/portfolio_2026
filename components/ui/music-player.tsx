@@ -1,58 +1,84 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-
-const tracks = [
-  { name: "COFFEE LOFI CHILL", src: "/audio/coffee-lofi-chill.mp3" },
-  { name: "GOOD NIGHT LOFI COZY", src: "/audio/good-night-lofi-cozy.mp3" },
-  { name: "STUDY CALM PEACEFUL", src: "/audio/study-calm-peaceful.mp3" },
-];
+import { useCallback, useEffect, useRef, useState } from "react";
+import { LOFI_TRACKS } from "@/lib/events";
 
 export function MusicPlayer() {
   const [playing, setPlaying] = useState<number | null>(null);
+  const playingRef = useRef<number | null>(null);
+  const lastIndexRef = useRef<number>(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Broadcast state so the command palette can react
+  const stopPlayback = useCallback(() => {
+    audioRef.current?.pause();
+    playingRef.current = null;
+    setPlaying(null);
+  }, []);
+
+  const startTrack = useCallback((rawIndex: number) => {
+    const index =
+      ((rawIndex % LOFI_TRACKS.length) + LOFI_TRACKS.length) % LOFI_TRACKS.length;
+    audioRef.current?.pause();
+    const audio = new Audio(LOFI_TRACKS[index].src);
+    audio.loop = true;
+    audio.play().catch(() => {});
+    audio.addEventListener("ended", () => {
+      playingRef.current = null;
+      setPlaying(null);
+    });
+    audioRef.current = audio;
+    lastIndexRef.current = index;
+    playingRef.current = index;
+    setPlaying(index);
+  }, []);
+
+  // Broadcast state so the command palette, nav, and quick dock stay in sync
   useEffect(() => {
     window.dispatchEvent(
       new CustomEvent("music:statechange", { detail: { playing } }),
     );
   }, [playing]);
 
-  // Command palette → pause
   useEffect(() => {
-    const handler = () => {
-      audioRef.current?.pause();
-      setPlaying(null);
+    const onPause = () => stopPlayback();
+
+    const onPlay = (event: CustomEvent<{ index?: number }>) => {
+      const requested = event.detail?.index ?? lastIndexRef.current;
+      if (playingRef.current === requested) {
+        stopPlayback();
+        return;
+      }
+      startTrack(requested);
     };
-    window.addEventListener("music:pause", handler);
-    return () => window.removeEventListener("music:pause", handler);
-  }, []);
 
-  // Command palette → play track by index
-  useEffect(() => {
-    const handler = (e: CustomEvent<{ index: number }>) =>
-      handlePlay(e.detail.index);
-    window.addEventListener("music:play", handler as EventListener);
-    return () =>
-      window.removeEventListener("music:play", handler as EventListener);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing]);
+    const onToggle = () => {
+      if (playingRef.current !== null) {
+        stopPlayback();
+      } else {
+        startTrack(lastIndexRef.current);
+      }
+    };
 
-  function handlePlay(index: number) {
-    if (playing === index) {
+    const onNext = () => {
+      const next =
+        playingRef.current === null
+          ? 0
+          : (playingRef.current + 1) % LOFI_TRACKS.length;
+      startTrack(next);
+    };
+
+    window.addEventListener("music:pause", onPause);
+    window.addEventListener("music:play", onPlay as EventListener);
+    window.addEventListener("music:toggle", onToggle);
+    window.addEventListener("music:next", onNext);
+    return () => {
       audioRef.current?.pause();
-      setPlaying(null);
-      return;
-    }
-    audioRef.current?.pause();
-    const audio = new Audio(tracks[index].src);
-    audio.loop = true;
-    audio.play().catch(() => {});
-    audio.addEventListener("ended", () => setPlaying(null));
-    audioRef.current = audio;
-    setPlaying(index);
-  }
+      window.removeEventListener("music:pause", onPause);
+      window.removeEventListener("music:play", onPlay as EventListener);
+      window.removeEventListener("music:toggle", onToggle);
+      window.removeEventListener("music:next", onNext);
+    };
+  }, [startTrack, stopPlayback]);
 
   return null;
 }

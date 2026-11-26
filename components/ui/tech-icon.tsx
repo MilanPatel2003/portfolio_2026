@@ -37,6 +37,7 @@ import {
   siMysql,
   siN8n,
   siNestjs,
+  siNextdotjs,
   siNodedotjs,
   siNpm,
   siPostgresql,
@@ -89,6 +90,11 @@ const BRAND_ICONS: Record<string, BrandIconSpec> = {
     icon: siReact,
     lightColor: "#0284C7",
     darkColor: "#61DAFB",
+  },
+  "next.js": {
+    icon: siNextdotjs,
+    lightColor: "#18181B",
+    darkColor: "#FAFAFA",
   },
   "redux toolkit": {
     icon: siRedux,
@@ -281,10 +287,12 @@ export function TechBadge({
   name,
   size = "sm",
   highlighted = false,
+  interactive = false,
 }: {
   name: string;
   size?: "sm" | "md";
   highlighted?: boolean;
+  interactive?: boolean;
 }) {
   return (
     <Badge
@@ -293,7 +301,7 @@ export function TechBadge({
         highlighted
           ? "border-brand bg-brand/10 text-foreground"
           : "border-border"
-      } ${
+      } ${interactive ? "cursor-pointer hover:bg-brand/8 hover:text-foreground active:translate-y-0" : ""} ${
         size === "md"
           ? "gap-2 px-2.5 py-1 text-xs text-foreground/90"
           : "gap-1.5 px-2 py-0.5 text-[11px] text-muted-foreground hover:text-foreground"

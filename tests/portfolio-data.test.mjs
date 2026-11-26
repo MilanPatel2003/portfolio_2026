@@ -46,8 +46,15 @@ test("hero, experience, projects, skills, education and certificates reflect res
   assert.equal(data.workExperience.length, 2);
   assert.equal(data.workExperience[0].company, "eSparkbiz Technologies Pvt. Ltd.");
   assert.equal(data.workExperience[0].deliverables.length, 2);
+  assert.equal(data.workExperience[0].deliverables[1].bullets.length, 4);
   assert.equal(data.workExperience[1].company, "Webcreta Technologies");
+  assert.equal(data.workExperience[1].period, "April 2025 – Aug 2025");
   assert.equal(data.workExperience[1].deliverables.length, 1);
+
+  const allExpBullets = data.workExperience
+    .flatMap((job) => job.deliverables.flatMap((d) => d.bullets))
+    .join(" ");
+  assert.doesNotMatch(allExpBullets, /wallet|60%|sub-200ms|99\.9%|5,000\+/i);
 
   assert.equal(data.projects.length, 8);
   assert.deepEqual(
@@ -69,8 +76,20 @@ test("hero, experience, projects, skills, education and certificates reflect res
   );
 
   assert.equal(data.skillGroups.length, 7);
+  const allSkillNames = data.skillGroups.flatMap((g) => g.items);
+  assert.ok(allSkillNames.includes("Next.js"));
+  assert.ok(allSkillNames.includes("Tailwind CSS"));
+  assert.ok(allSkillNames.includes("LLM"));
+
+  assert.ok(data.workExperience[0].deliverables[0].architecture);
+  assert.ok(data.workExperience[0].deliverables[1].architecture);
+
   assert.equal(data.education.length, 2);
   assert.equal(data.certificates.length, 3);
+  assert.match(
+    data.certificates[2].url ?? "",
+    /forage-uploads-prod\.s3\.amazonaws\.com/,
+  );
 
   const logoPaths = [
     data.hero.currentCompanyLogo,

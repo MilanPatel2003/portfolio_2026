@@ -1,12 +1,19 @@
 import Image from "next/image";
 import { ArrowUpRight, Briefcase, MapPin } from "lucide-react";
+import { ArchitectureDrawer } from "@/components/ui/architecture-drawer";
+import { SkillJumpButton } from "@/components/ui/skill-jump-button";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { TechBadge } from "@/components/ui/tech-icon";
 import { WorkspaceFile } from "@/components/ui/workspace-file";
-import { workExperience } from "@/data/data";
+import { skillGroups, workExperience } from "@/data/data";
+import { toDeliverableId } from "@/lib/events";
+
+const KNOWN_SKILLS = new Set(
+  skillGroups.flatMap((group) => group.items.map((item) => item.toLowerCase())),
+);
 
 const METRIC_PATTERN =
-  /(\b(?:30,000\+|5,000\+|99\.9%|sub-200ms|over 60%|20%|35%|45%|zero record duplication)\b)/gi;
+  /(30,000\+|\b3 plans\b|\b8 Stripe webhook event types\b|\bup to 3 times\b|\bfull and partial refunds\b|\bOFFSET\/LIMIT\b|\bwithout creating duplicate records\b)/gi;
 
 function renderHighlightedBullet(text: string) {
   return text.split(METRIC_PATTERN).map((part, idx) =>
@@ -58,8 +65,11 @@ export function ExperienceSection() {
                     : "border-border bg-background shadow-[0_0_0_4px_var(--background)]"
                 }`}
               >
+                {job.current && (
+                  <span className="absolute inset-0 animate-ping bg-brand/35 motion-reduce:hidden" />
+                )}
                 <span
-                  className={`h-2 w-2 ${
+                  className={`relative h-2 w-2 ${
                     job.current ? "bg-brand" : "bg-muted-foreground/60"
                   }`}
                 />
@@ -138,7 +148,11 @@ export function ExperienceSection() {
                 }`}
               >
                 {job.deliverables.map((item) => (
-                  <SpotlightCard key={item.name} className="p-4 sm:p-5">
+                  <SpotlightCard
+                    key={item.name}
+                    id={toDeliverableId(item.name)}
+                    className="deliverable-anchor p-4 sm:p-5"
+                  >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2.5">
                         {item.logo && (
@@ -157,23 +171,39 @@ export function ExperienceSection() {
                         </h4>
                       </div>
 
-                      {item.liveUrl && (
-                        <a
-                          href={item.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group/live inline-flex items-center gap-1 border border-brand/40 bg-brand/10 px-2 py-0.5 font-space-mono text-[11px] font-medium text-brand transition-colors hover:bg-brand hover:text-brand-foreground"
-                        >
-                          <span>Live Site</span>
-                          <ArrowUpRight className="h-3 w-3 transition-transform duration-150 group-hover/live:translate-x-0.5 group-hover/live:-translate-y-0.5" />
-                        </a>
-                      )}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {item.architecture && (
+                          <ArchitectureDrawer
+                            deliverableName={item.name}
+                            companyName={job.company}
+                            liveUrl={item.liveUrl}
+                            architecture={item.architecture}
+                          />
+                        )}
+                        {item.liveUrl && (
+                          <a
+                            href={item.liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group/live inline-flex items-center gap-1 border border-brand/40 bg-brand/10 px-2 py-0.5 font-space-mono text-[11px] font-medium text-brand transition-all duration-150 hover:bg-brand hover:text-brand-foreground active:scale-95"
+                          >
+                            <span>Live Site</span>
+                            <ArrowUpRight className="h-3 w-3 transition-transform duration-150 group-hover/live:translate-x-0.5 group-hover/live:-translate-y-0.5" />
+                          </a>
+                        )}
+                      </div>
                     </div>
 
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {item.stack.map((tech) => (
-                        <TechBadge key={tech} name={tech} />
-                      ))}
+                      {item.stack.map((tech) =>
+                        KNOWN_SKILLS.has(tech.toLowerCase()) ? (
+                          <SkillJumpButton key={tech} skill={tech}>
+                            <TechBadge name={tech} interactive />
+                          </SkillJumpButton>
+                        ) : (
+                          <TechBadge key={tech} name={tech} />
+                        ),
+                      )}
                     </div>
 
                     <ul className="mt-3.5 space-y-2 text-sm leading-relaxed text-muted-foreground">

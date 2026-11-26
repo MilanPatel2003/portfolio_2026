@@ -2,7 +2,18 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { Command, Menu, Moon, Palette, Sun, X } from "lucide-react";
+import {
+  Command,
+  Menu,
+  Moon,
+  Music,
+  Palette,
+  Pause,
+  Sparkles,
+  Sun,
+  X,
+} from "lucide-react";
+import { openPortfolioChat, showToast, toggleLofiMusic } from "@/lib/events";
 import { toggleDarkLightTheme } from "@/lib/theme";
 
 const NAV_ITEMS = [
@@ -48,6 +59,7 @@ export function PortfolioNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeAccent, setActiveAccent] = useState<string>("orange");
   const [activeSection, setActiveSection] = useState<string>("");
+  const [musicPlaying, setMusicPlaying] = useState<boolean>(false);
 
   const headerRef = useRef<HTMLElement>(null);
   const accentRef = useRef<HTMLDivElement>(null);
@@ -148,8 +160,21 @@ export function PortfolioNav() {
   }, []);
 
   useEffect(() => {
+    const onMusicState = (event: CustomEvent<{ playing: number | null }>) => {
+      setMusicPlaying((event.detail?.playing ?? null) !== null);
+    };
+    window.addEventListener("music:statechange", onMusicState as EventListener);
+    return () => {
+      window.removeEventListener(
+        "music:statechange",
+        onMusicState as EventListener,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
     if (!accentOpen && !mobileOpen) return;
-    const onPointerDown = (event: MouseEvent) => {
+    const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node;
       if (accentOpen && accentRef.current && !accentRef.current.contains(target)) {
         setAccentOpen(false);
@@ -164,10 +189,10 @@ export function PortfolioNav() {
         setMobileOpen(false);
       }
     };
-    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [accentOpen, mobileOpen]);
@@ -190,6 +215,7 @@ export function PortfolioNav() {
     lockSectionBriefly("");
     setActiveSection("");
     setMobileOpen(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function toggleTheme() {
@@ -204,6 +230,7 @@ export function PortfolioNav() {
     } catch {
       /* Ignore storage errors */
     }
+    showToast(`Accent: ${accent.label}`);
     setAccentOpen(false);
   }
 
@@ -218,13 +245,16 @@ export function PortfolioNav() {
       ref={headerRef}
       className="pointer-events-none sticky top-2.5 z-40 mt-2.5 px-3 sm:top-3 sm:mt-3 sm:px-6 lg:px-8"
     >
-      <div className="pointer-events-auto relative mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 rounded-full border border-border/80 bg-background/90 px-4 shadow-[0_10px_36px_-10px_rgba(0,0,0,0.16)] backdrop-blur-md sm:h-16 sm:px-8 dark:border-white/15 dark:shadow-[0_14px_42px_-10px_rgba(0,0,0,0.65)]">
+      <div className="pointer-events-auto relative mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 rounded-full border border-border/80 bg-background/90 px-3 shadow-[0_10px_36px_-10px_rgba(0,0,0,0.16)] backdrop-blur-md sm:h-16 sm:px-8 dark:border-white/15 dark:shadow-[0_14px_42px_-10px_rgba(0,0,0,0.65)]">
         {/* Navbar Bust Avatar with crisp "Hey!" speech pop-up on hover */}
         <a
           href="#top"
-          onClick={handleBrandClick}
+          onClick={(event) => {
+            event.preventDefault();
+            handleBrandClick();
+          }}
           aria-label="Milan Patel — Back to top"
-          className="group/navavatar relative flex h-14 w-12 shrink-0 items-end justify-center sm:h-16 sm:w-14 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="group/navavatar relative flex h-14 w-12 shrink-0 items-end justify-center transition-transform duration-150 active:scale-95 sm:h-16 sm:w-14 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <span className="relative flex h-full w-full items-end justify-center overflow-hidden">
             <Image
@@ -260,7 +290,7 @@ export function PortfolioNav() {
                 href={item.href}
                 onClick={() => handleNavClick(item.id)}
                 aria-current={isActive ? "location" : undefined}
-                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-space-mono text-xs transition-colors duration-150 focus-visible:outline-none ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-space-mono text-xs transition-all duration-150 active:scale-[0.97] focus-visible:outline-none ${
                   isActive
                     ? "border border-border bg-background text-foreground shadow-xs"
                     : "border border-transparent text-muted-foreground hover:text-foreground"
@@ -268,8 +298,8 @@ export function PortfolioNav() {
               >
                 <span
                   aria-hidden="true"
-                  className={`h-1.5 w-1.5 rounded-full transition-opacity duration-150 ${
-                    isActive ? "bg-brand opacity-100" : "opacity-0"
+                  className={`h-1.5 w-1.5 rounded-full transition-all duration-150 ${
+                    isActive ? "scale-100 bg-brand opacity-100" : "scale-0 opacity-0"
                   }`}
                 />
                 <span>{item.label}</span>
@@ -282,8 +312,18 @@ export function PortfolioNav() {
         <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             type="button"
+            onClick={() => openPortfolioChat()}
+            aria-label="Ask AI about Milan"
+            className="group/navai inline-flex h-9 items-center justify-center gap-1.5 rounded-full border border-brand/50 bg-brand/12 px-2.5 font-space-mono text-xs font-semibold text-foreground transition-all duration-150 hover:bg-brand hover:text-brand-foreground active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:px-3"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-brand transition-colors group-hover/navai:text-brand-foreground" />
+            <span>Ask AI</span>
+          </button>
+
+          <button
+            type="button"
             onClick={openCommands}
-            className="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-full border border-border bg-background/90 font-space-mono text-xs text-muted-foreground transition-colors hover:border-brand hover:text-foreground focus-visible:border-brand focus-visible:outline-none sm:w-auto sm:px-3"
+            className="inline-flex h-9 w-9 items-center justify-center gap-2 rounded-full border border-border bg-background/90 font-space-mono text-xs text-muted-foreground transition-all duration-150 hover:border-brand hover:text-foreground active:scale-95 focus-visible:border-brand focus-visible:outline-none sm:w-auto sm:px-3"
             aria-label="Open command palette"
           >
             <Command className="h-3.5 w-3.5 text-brand" />
@@ -302,7 +342,7 @@ export function PortfolioNav() {
               }}
               aria-label="Choose accent color"
               aria-expanded={accentOpen}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground transition-colors hover:border-brand hover:text-brand focus-visible:border-brand focus-visible:outline-none ${
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground transition-all duration-150 hover:border-brand hover:text-brand active:scale-95 focus-visible:border-brand focus-visible:outline-none ${
                 accentOpen ? "border-brand text-brand" : ""
               }`}
             >
@@ -313,7 +353,7 @@ export function PortfolioNav() {
               <div
                 role="menu"
                 aria-label="Accent color presets"
-                className="absolute right-[-44px] top-11 z-50 flex items-center gap-1.5 rounded-full border border-border bg-popover p-2 shadow-lg sm:right-0"
+                className="absolute right-[-44px] top-11 z-50 flex items-center gap-1.5 rounded-full border border-border bg-popover p-2 shadow-lg animate-in fade-in-0 zoom-in-95 slide-in-from-top-1 duration-150 sm:right-0"
               >
                 {ACCENTS.map((accent) => (
                   <button
@@ -324,7 +364,7 @@ export function PortfolioNav() {
                     aria-label={`Set accent color to ${accent.label}`}
                     title={accent.label}
                     onClick={() => selectAccent(accent)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full transition-transform hover:scale-110 focus-visible:outline-1 focus-visible:outline-brand"
+                    className="flex h-7 w-7 items-center justify-center rounded-full transition-transform hover:scale-110 active:scale-90 focus-visible:outline-1 focus-visible:outline-brand"
                   >
                     <span
                       className={`h-4 w-4 rounded-full ${
@@ -344,12 +384,12 @@ export function PortfolioNav() {
             type="button"
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground transition-colors hover:border-brand hover:text-brand focus-visible:border-brand focus-visible:outline-none"
+            className="group/theme inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground transition-all duration-150 hover:border-brand hover:text-brand active:scale-95 focus-visible:border-brand focus-visible:outline-none"
           >
             {theme === "dark" ? (
-              <Sun className="h-3.5 w-3.5" />
+              <Sun className="h-3.5 w-3.5 transition-transform duration-200 group-hover/theme:rotate-12" />
             ) : (
-              <Moon className="h-3.5 w-3.5" />
+              <Moon className="h-3.5 w-3.5 transition-transform duration-200 group-hover/theme:-rotate-12" />
             )}
           </button>
 
@@ -361,7 +401,7 @@ export function PortfolioNav() {
             }}
             aria-label={mobileOpen ? "Close menu" : "Open navigation menu"}
             aria-expanded={mobileOpen}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground transition-colors hover:border-brand hover:text-foreground md:hidden"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/90 text-muted-foreground transition-all duration-150 hover:border-brand hover:text-foreground active:scale-95 md:hidden"
           >
             {mobileOpen ? (
               <X className="h-4 w-4" />
@@ -388,7 +428,7 @@ export function PortfolioNav() {
       {mobileOpen && (
         <nav
           aria-label="Mobile section navigation"
-          className="pointer-events-auto mx-auto mt-2.5 max-w-5xl rounded-2xl border border-border/80 bg-background/95 p-3 shadow-xl backdrop-blur-md md:hidden"
+          className="pointer-events-auto mx-auto mt-2.5 max-w-5xl rounded-2xl border border-border/80 bg-background/95 p-3 shadow-xl backdrop-blur-md animate-in fade-in-0 slide-in-from-top-2 duration-200 md:hidden"
         >
           <div className="grid grid-cols-2 gap-1.5">
             {NAV_ITEMS.map((item) => {
@@ -415,6 +455,50 @@ export function PortfolioNav() {
                 </a>
               );
             })}
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-1.5 border-t border-border/70 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                openPortfolioChat();
+              }}
+              className="flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl border border-brand/50 bg-brand/10 px-2.5 py-2 font-space-mono text-xs font-semibold text-foreground transition-colors hover:bg-brand hover:text-brand-foreground"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-brand" />
+              <span>Ask AI</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                openCommands();
+              }}
+              className="flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-background px-2.5 py-2 font-space-mono text-xs text-foreground transition-colors hover:border-brand"
+            >
+              <Command className="h-3.5 w-3.5 text-brand" />
+              <span>Search</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                toggleLofiMusic();
+                setMobileOpen(false);
+              }}
+              className="flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl border border-border/70 bg-background px-2.5 py-2 font-space-mono text-xs text-foreground transition-colors hover:border-brand"
+            >
+              {musicPlaying ? (
+                <>
+                  <Pause className="h-3.5 w-3.5 text-brand" />
+                  <span>Pause</span>
+                </>
+              ) : (
+                <>
+                  <Music className="h-3.5 w-3.5 text-brand" />
+                  <span>Lo-Fi</span>
+                </>
+              )}
+            </button>
           </div>
         </nav>
       )}

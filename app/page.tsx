@@ -21,7 +21,7 @@ export const revalidate = 3600;
 
 export default function Home() {
   return (
-    <div className="relative isolate min-h-screen bg-background text-foreground">
+    <div className="relative isolate min-h-screen overflow-x-clip bg-background text-foreground">
       <StructuredData />
       <IntroCurtain />
       <BGPattern

@@ -19,7 +19,7 @@ export function IntroCurtain() {
     const fallback = window.setTimeout(() => {
       hasPlayedInRuntime = true;
       setActive(false);
-    }, 2100);
+    }, 1450);
     return () => window.clearTimeout(fallback);
   }, [active]);
 

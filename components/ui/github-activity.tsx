@@ -117,16 +117,49 @@ export function GitHubActivity({ fit = false }: { fit?: boolean }) {
     };
   }, [brandColor, isDark]);
 
-  if (data === null || data.length === 0) {
+  if (data === null) {
+    return (
+      <div className="space-y-5" role="status" aria-label="Loading GitHub contributions">
+        <div className="space-y-1.5 overflow-hidden py-2">
+          <div className="h-3 w-48 animate-pulse bg-muted/50" />
+          <div className="grid grid-cols-12 gap-1.5 pt-2">
+            {Array.from({ length: 36 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="h-2.5 animate-pulse rounded-[2px] bg-muted/45"
+              />
+            ))}
+          </div>
+          <p className="pt-2 font-space-mono text-[11px] text-muted-foreground">
+            Syncing GitHub contributions…
+          </p>
+        </div>
+
+        {fit && (
+          <div className="grid grid-cols-2 gap-3 border-t border-border/70 pt-4 sm:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="border border-border/60 bg-muted/15 px-3 py-2"
+              >
+                <div className="h-2.5 w-20 animate-pulse bg-muted/60" />
+                <div className="mt-2.5 h-6 w-12 animate-pulse bg-muted/50" />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (data.length === 0) {
     return (
       <div
         className={`flex items-center justify-center ${fit ? "min-h-[168px]" : "min-h-[180px]"}`}
         role="status"
       >
         <p className="font-space-mono text-xs text-muted-foreground">
-          {data === null
-            ? "Fetching GitHub contributions…"
-            : "GitHub contributions unavailable offline or at the moment."}
+          GitHub contributions unavailable offline or at the moment.
         </p>
       </div>
     );
@@ -135,7 +168,7 @@ export function GitHubActivity({ fit = false }: { fit?: boolean }) {
   const fitBlock = Math.max(6, Math.min(13, Math.floor(fitWidth / 53) - 2));
 
   return (
-    <>
+    <div className="animate-in fade-in-0 duration-300">
       <div ref={scrollRef} className="no-scrollbar w-full overflow-x-auto">
         <div className="mx-auto w-fit">
           <ActivityCalendar
@@ -157,6 +190,7 @@ export function GitHubActivity({ fit = false }: { fit?: boolean }) {
                     }`
               } on ${activity.date}`;
               return React.cloneElement(block, {
+                className: "transition-opacity duration-150 hover:opacity-80",
                 onMouseEnter: (e: React.MouseEvent) =>
                   setTip({ x: e.clientX, y: e.clientY, text: label }),
                 onMouseMove: (e: React.MouseEvent) =>
@@ -179,12 +213,12 @@ export function GitHubActivity({ fit = false }: { fit?: boolean }) {
           {getStats(data).map(([label, value]) => (
             <div
               key={label}
-              className="border border-border/60 bg-muted/15 px-3 py-2"
+              className="border border-border/60 bg-muted/15 px-3 py-2 transition-colors hover:border-brand/50"
             >
               <dt className="font-space-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                 {label}
               </dt>
-              <dd className="mt-1 font-space-mono text-lg font-bold text-foreground">
+              <dd className="mt-1 font-space-mono text-lg font-bold tabular-nums text-foreground">
                 {value}
               </dd>
             </div>
@@ -194,7 +228,7 @@ export function GitHubActivity({ fit = false }: { fit?: boolean }) {
 
       {tip && (
         <div
-          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full border border-border bg-popover px-2.5 py-1 font-space-mono text-xs whitespace-nowrap text-popover-foreground shadow-lg"
+          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full border border-border bg-popover px-2.5 py-1 font-space-mono text-xs whitespace-nowrap text-popover-foreground shadow-lg animate-in fade-in-0 duration-100"
           style={{
             left: `clamp(90px, ${tip.x}px, calc(100vw - 90px))`,
             top: tip.y - 8,
@@ -203,6 +237,6 @@ export function GitHubActivity({ fit = false }: { fit?: boolean }) {
           {tip.text}
         </div>
       )}
-    </>
+    </div>
   );
 }

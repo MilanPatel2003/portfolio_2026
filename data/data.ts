@@ -43,6 +43,19 @@ export interface SkillGroup {
   items: string[];
 }
 
+export interface ArchitectureStep {
+  title: string;
+  layer: string;
+  detail: string;
+}
+
+export interface ArchitectureSpec {
+  headline: string;
+  overview: string;
+  steps: ArchitectureStep[];
+  safeguards: string[];
+}
+
 export interface ExperienceDeliverable {
   name: string;
   logo?: string;
@@ -50,6 +63,7 @@ export interface ExperienceDeliverable {
   liveUrl?: string;
   stack: string[];
   bullets: string[];
+  architecture?: ArchitectureSpec;
 }
 
 export interface WorkExperience {
@@ -136,7 +150,7 @@ export const hero: Hero = {
     {
       name: "Email",
       label: "milanpatel6454@gmail.com",
-      href: "mailto:milanpatel6454@gmail.com",
+      href: "mailto:milanpatel6454@gmail.com?subject=Opportunity%20for%20Milan%20Patel",
       icon: Mail,
     },
     {
@@ -157,7 +171,15 @@ export const skillGroups: SkillGroup[] = [
   {
     category: "Frontend",
     icon: Layers,
-    items: ["React", "Redux Toolkit", "TanStack Query", "HTML", "CSS"],
+    items: [
+      "React",
+      "Next.js",
+      "Redux Toolkit",
+      "TanStack Query",
+      "Tailwind CSS",
+      "HTML",
+      "CSS",
+    ],
   },
   {
     category: "Backend",
@@ -197,7 +219,7 @@ export const skillGroups: SkillGroup[] = [
   {
     category: "Other",
     icon: Wrench,
-    items: ["Elasticsearch", "Algolia", "Docker", "n8n"],
+    items: ["Elasticsearch", "Algolia", "Docker", "n8n", "LLM"],
   },
 ];
 
@@ -217,10 +239,53 @@ export const workExperience: WorkExperience[] = [
         liveUrl: "https://www.brightmontacademy.com",
         stack: ["Node.js", "HubSpot CRM", "Webhooks", "Serverless", "LLM"],
         bullets: [
-          "Deployed Node.js serverless functions processing 30,000+ monthly HubSpot CRM portal webhooks, optimizing event-loop performance to maintain sub-200ms latency.",
-          "Integrated LLM-powered blog summarization with content-hash caching, eliminating redundant API calls and cutting LLM token costs by over 60%.",
-          "Engineered a stateful checkpoint system tracking API cursor tokens, guaranteeing idempotent data ingestion and seamless error recovery with zero record duplication.",
+          "Wrote Node.js serverless functions that handle 30,000+ HubSpot CRM webhooks a month, keeping each handler short so responses stay quick.",
+          "Cached LLM blog summaries against a hash of the post content, so a post goes back to the model only when its text changes.",
+          "Added a checkpoint that saves the API cursor after each batch, so a failed sync restarts from where it stopped without creating duplicate records.",
         ],
+        architecture: {
+          headline: "Webhook Sync & Hash-Cached LLM Pipeline",
+          overview:
+            "Serverless HubSpot CRM webhook pipeline handling 30,000+ monthly events with batch cursor recovery and content-hash LLM deduplication.",
+          steps: [
+            {
+              title: "HubSpot CRM Webhooks",
+              layer: "Ingress · 30,000+/mo",
+              detail:
+                "Emits portal webhook events on blog updates and CRM record changes.",
+            },
+            {
+              title: "Node.js Serverless Handlers",
+              layer: "Compute",
+              detail:
+                "Executes short, bounded handlers so webhook acknowledgments return fast without timeouts.",
+            },
+            {
+              title: "API Cursor Checkpointing",
+              layer: "State Recovery",
+              detail:
+                "Persists the API cursor after each processed batch so failed syncs resume cleanly without duplicating records.",
+            },
+            {
+              title: "Content-Hash Cache Check",
+              layer: "Cache Layer",
+              detail:
+                "Hashes blog post text and returns the cached summary unless the post body actually changed.",
+            },
+            {
+              title: "LLM Summarization Service",
+              layer: "AI Processing",
+              detail:
+                "Invoked only on cache misses for modified posts, keeping summaries updated efficiently.",
+            },
+          ],
+          safeguards: [
+            "Short handler execution",
+            "Per-batch cursor checkpointing",
+            "Hash check skips unchanged content",
+            "Zero duplicate records on restart",
+          ],
+        },
       },
       {
         name: "The ASL Shop",
@@ -228,10 +293,54 @@ export const workExperience: WorkExperience[] = [
         liveUrl: "https://www.theaslshop.com",
         stack: ["React", "Node.js", "PostgreSQL", "Stripe", "RabbitMQ"],
         bullets: [
-          "Implemented Stripe billing integration for subscription upgrades/downgrades with automated proration logic, increasing successful checkout conversions by 20%.",
-          "Built an idempotent webhook engine using RabbitMQ Dead Letter Exchange (DLX) retry queues, processing 5,000+ daily events with 99.9% system reliability.",
-          "Architected a custom user wallet system with transactional PostgreSQL migrations and interactive React UI components, reducing payment checkout time by 35% and boosting store credit utilization by 45%.",
+          "Built subscription upgrade, downgrade and cancellation flows across 3 plans, combining Stripe proration and cancel-at-period-end with backend logic that keeps a user's access active until the paid period ends.",
+          "Wrote a RabbitMQ consumer for 8 Stripe webhook event types that ignores duplicate event IDs and retries failures up to 3 times before sending them to a dead-letter queue.",
+          "Created a coupon system stored in PostgreSQL and linked to Stripe, where each coupon can be limited to certain products or plans, with expiry and usage limits checked at checkout.",
+          "Added full and partial refunds through Stripe, and saved the refund status in the database from webhooks.",
         ],
+        architecture: {
+          headline: "Subscriptions, Coupons, Refunds & RabbitMQ Engine",
+          overview:
+            "Billing architecture connecting React subscription/checkout flows with Stripe APIs, PostgreSQL coupon/refund persistence, and fault-tolerant RabbitMQ webhook processing.",
+          steps: [
+            {
+              title: "Subscription & Checkout UI",
+              layer: "React Frontend",
+              detail:
+                "Handles plan upgrades, downgrades, cancellations across 3 plans, and promo code entry at checkout.",
+            },
+            {
+              title: "Billing & Coupon Validation",
+              layer: "Node.js · Stripe API",
+              detail:
+                "Applies Stripe proration, cancel-at-period-end rules, product/plan coupon scoping, expiry/usage validation, and full/partial refunds.",
+            },
+            {
+              title: "Stripe Webhook Ingress",
+              layer: "8 Event Types",
+              detail:
+                "Captures subscription lifecycle, invoice, and refund webhook events for reliable async reconciliation.",
+            },
+            {
+              title: "RabbitMQ Consumer & DLQ",
+              layer: "Message Queue",
+              detail:
+                "Tracks processed event IDs to skip duplicates and retries failures up to 3 times before dead-letter routing.",
+            },
+            {
+              title: "PostgreSQL Persistence",
+              layer: "Primary Database",
+              detail:
+                "Stores linked Stripe coupons, period-end access entitlements, and verified webhook refund statuses.",
+            },
+          ],
+          safeguards: [
+            "Duplicate Stripe event ID guard",
+            "Up to 3 retries + dead-letter queue",
+            "Cancel-at-period-end access retention",
+            "Product, plan, expiry & usage checks",
+          ],
+        },
       },
     ],
   },
@@ -240,7 +349,7 @@ export const workExperience: WorkExperience[] = [
     logo: "/logos/webcreta.png",
     companyUrl: "https://webcreta.com",
     role: "Software Development Intern",
-    period: "April 2025 – Aug 2026",
+    period: "April 2025 – Aug 2025",
     location: "Ahmedabad, Gujarat",
     current: false,
     deliverables: [
@@ -273,6 +382,7 @@ export const projects: Project[] = [
       "Managed hosting, deployment and ongoing maintenance; improved SEO and added automation workflows for operational efficiency.",
     ],
     tags: ["React", "Google Sheets API", "SEO", "Automation"],
+    previewImage: "/projects/innovate-accounting.jpg",
     liveUrl: "https://innovateaccountingsolutions.com/",
     liveLabel: "Live Site",
   },
@@ -298,10 +408,10 @@ export const projects: Project[] = [
       "Gemini",
       "Stripe",
     ],
-    previewImage: "/projects/preponyx.png",
+    previewImage: "/projects/preponyx.webp",
     liveUrl: "https://preponyx.web.app/",
     liveLabel: "Live Demo",
-    githubUrl: "https://github.com/MilanPatel2003/preponyx",
+    githubUrl: "https://github.com/MilanPatel2003/PrepOnyx",
   },
   {
     title: "React ScreenFlow",
@@ -310,14 +420,14 @@ export const projects: Project[] = [
     category: "NPM Library",
     featured: true,
     summary:
-      "Lightweight React animation library providing smooth, reusable screen transitions with spring physics and 3D transforms.",
+      "Lightweight React animation library built with TypeScript and Framer Motion for smooth, reusable screen transitions.",
     highlights: [
-      "Built a React animation library with smooth, reusable screen transitions and ESM/CommonJS support.",
+      "Built a React animation library with smooth, reusable screen transitions.",
       "Used TypeScript and Framer Motion for flexibility and performance.",
       "Published as an NPM package that reached 250+ weekly downloads early on.",
     ],
     tags: ["React", "TypeScript", "Framer Motion", "NPM"],
-    previewImage: "/projects/react-screenflow.png",
+    previewImage: "/projects/react-screenflow.webp",
     liveUrl: "https://www.npmjs.com/package/react-screenflow",
     liveLabel: "NPM Package",
     githubUrl: "https://github.com/MilanPatel2003/react-screenflow",
@@ -342,7 +452,7 @@ export const projects: Project[] = [
       "Node.js",
       "Gemini",
     ],
-    previewImage: "/projects/logic-ledger.png",
+    previewImage: "/projects/logic-ledger.webp",
     liveUrl: "https://logic-ledger.vercel.app/",
     liveLabel: "Live Demo",
     githubUrl: "https://github.com/MilanPatel2003/ai-calculator",
@@ -368,7 +478,7 @@ export const projects: Project[] = [
       "JWT",
       "Zod",
     ],
-    previewImage: "/projects/tawkist.png",
+    previewImage: "/projects/tawkist.webp",
     liveUrl: "https://tawkist-chat-application.onrender.com",
     liveLabel: "Live Demo",
     githubUrl: "https://github.com/MilanPatel2003/Tawkist-Chat-App-MERN-",
@@ -393,7 +503,7 @@ export const projects: Project[] = [
       "React Router",
       "Axios",
     ],
-    previewImage: "/projects/mini-ecom.png",
+    previewImage: "/projects/mini-ecom.webp",
     liveUrl: "https://mini-ecom-redux-learn.vercel.app/",
     liveLabel: "Live Demo",
     githubUrl: "https://github.com/MilanPatel2003/MINI-ECOM-REDUX-LEARN",
@@ -410,7 +520,7 @@ export const projects: Project[] = [
       "Added live parameter controls with lil-gui for instant visual customization.",
     ],
     tags: ["HTML", "CSS", "JavaScript", "Three.js"],
-    previewImage: "/projects/scifi-3d-avatar.png",
+    previewImage: "/projects/scifi-3d-avatar.webp",
     liveUrl: "https://milanpatel2003.github.io/ThreeJS/",
     liveLabel: "Live Demo",
     githubUrl: "https://github.com/MilanPatel2003/ThreeJS",
@@ -426,7 +536,7 @@ export const projects: Project[] = [
       "Built mobile-first responsive sections including carousel testimonials and pricing cards using HTML and Bootstrap.",
     ],
     tags: ["HTML", "Bootstrap"],
-    previewImage: "/projects/tin-dog.png",
+    previewImage: "/projects/tin-dog.webp",
     liveUrl: "https://milanpatel2003.github.io/bootstrap-practice-website/",
     liveLabel: "Live Demo",
     githubUrl: "https://github.com/MilanPatel2003/bootstrap-practice-website",
@@ -456,7 +566,7 @@ export const certificates: Certificate[] = [
   {
     title: "Web Development Bootcamp by Angela Yu",
     issuer: "Udemy",
-    url: "https://udemy-certificate.s3.amazonaws.com/image/UC-26baac76-9708-432b-9fea-2c0f5741721e.jpg",
+    url: "https://www.udemy.com/certificate/UC-26baac76-9708-432b-9fea-2c0f5741721e/",
   },
   {
     title: "Data Structures and Algorithms by Andrei Neagoie",
@@ -465,5 +575,6 @@ export const certificates: Certificate[] = [
   {
     title: "Software Engineering Job Simulation",
     issuer: "Cisco (Forage)",
+    url: "https://forage-uploads-prod.s3.amazonaws.com/completion-certificates/Cisco/kinDTvjiZRcYbwqLo_Cisco_6bM5ZiDpcTzGYqqDs_1728712187984_completion_certificate.pdf",
   },
 ];

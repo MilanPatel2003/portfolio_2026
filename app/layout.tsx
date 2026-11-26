@@ -9,6 +9,8 @@ import { site } from "@/lib/site";
 import { Analytics } from "@vercel/analytics/next";
 import { CommandPalette } from "@/components/ui/command-palette";
 import { MusicPlayer } from "@/components/ui/music-player";
+import { PortfolioChat } from "@/components/ui/portfolio-chat";
+import { ToastRegion } from "@/components/ui/toast-region";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -141,6 +143,8 @@ export default function RootLayout({
         {children}
         <MusicPlayer />
         <CommandPalette />
+        <PortfolioChat />
+        <ToastRegion />
         <Analytics />
       </body>
     </html>

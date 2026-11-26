@@ -23,7 +23,7 @@ export function EducationSection() {
 
           <div className="space-y-3">
             {education.map((edu) => (
-              <SpotlightCard key={edu.degree} className="p-3.5">
+              <SpotlightCard key={edu.degree} className="p-3.5 hover:-translate-y-0.5">
                 <div className="flex flex-col items-start justify-between gap-2.5 sm:flex-row">
                   <div className="flex min-w-0 items-start gap-3">
                     {edu.logo && (
@@ -68,7 +68,7 @@ export function EducationSection() {
             {certificates.map((cert) => (
               <li
                 key={cert.title}
-                className="flex flex-col items-start justify-between gap-2 border-b border-border/50 pb-2.5 last:border-b-0 last:pb-0 sm:flex-row sm:items-center sm:gap-3"
+                className="-mx-1.5 flex flex-col items-start justify-between gap-2 rounded-xs border-b border-border/50 px-1.5 pb-2.5 transition-colors hover:bg-muted/25 last:border-b-0 last:pb-0 sm:flex-row sm:items-center sm:gap-3"
               >
                 {cert.url ? (
                   <a

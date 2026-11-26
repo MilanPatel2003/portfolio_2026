@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowDownRight, Layers, Search, Sparkles, X } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { TechIcon } from "@/components/ui/tech-icon";
 import { WorkspaceFile } from "@/components/ui/workspace-file";
 import { projects, skillGroups, workExperience } from "@/data/data";
+import {
+  focusDeliverableCard,
+  selectAndScrollToProject,
+  toDeliverableId,
+} from "@/lib/events";
 
 const CORE_DRIVERS = [
   { name: "TypeScript", role: "Primary Language" },
@@ -31,9 +36,11 @@ const SKILL_NOTES: Record<string, string> = {
   TypeScript: "Strict typing across React frontends, Node.js APIs, NestJS services, and open-source NPM packages.",
   Python: "Scripting, backend automation, and data workflows.",
   SQL: "Complex queries, transactional migrations, indexing, and server-side pagination.",
-  React: "Component systems, interactive wallets, AI SaaS dashboards, and reusable animation libraries.",
+  React: "Component systems, subscription & coupon checkout UIs, AI SaaS dashboards, and reusable animation libraries.",
+  "Next.js": "App Router, server-rendered metadata/JSON-LD, static pre-rendering, and full-stack SEO architecture.",
   "Redux Toolkit": "Predictable client state management for multi-step commerce and cart workflows.",
   "TanStack Query": "Declarative server-state caching, background syncing, and optimistic updates.",
+  "Tailwind CSS": "Utility-first responsive layouts, design-token theming, and accessible component styling.",
   HTML: "Semantic markup, accessibility structure, and SEO-friendly document architecture.",
   CSS: "Responsive layouts, CSS variables, custom micro-interactions, and modern grid systems.",
   "Node.js": "High-throughput serverless webhooks, REST services, and event-driven workers.",
@@ -41,29 +48,31 @@ const SKILL_NOTES: Record<string, string> = {
   NestJS: "Modular backend architecture using DI, controllers, services, guards, pipes, and DTOs.",
   "REST APIs": "Paginated, idempotent, schema-validated HTTP endpoints and external CRM integrations.",
   Redis: "Low-latency caching and backing store for high-frequency queues.",
-  RabbitMQ: "Idempotent webhook processing with Dead Letter Exchange (DLX) retry pipelines.",
+  RabbitMQ: "Stripe webhook consumers with duplicate event ID checks, retries, and dead-letter queues.",
   BullMQ: "Redis-backed background job scheduling, retries, and asynchronous task queues.",
-  PostgreSQL: "Transactional migrations, relational schemas, wallet ledgers, and OFFSET/LIMIT queries.",
+  PostgreSQL: "Relational schemas, versioned migrations, coupon & refund persistence, and OFFSET/LIMIT pagination.",
   MySQL: "Relational database modeling, joins, and CRUD backend services.",
   MongoDB: "Document schema design for real-time MERN applications and chat histories.",
   Sequelize: "Versioned PostgreSQL migrations, model associations, and schema management.",
   TypeORM: "Entity modeling, repository patterns, and TypeScript-first SQL migrations.",
   Prisma: "Type-safe database client, schema modeling, and rapid query composition.",
-  Stripe: "Subscription upgrades/downgrades, automated proration, and serverless webhook billing.",
+  Stripe: "Subscription upgrade/downgrade/cancellation flows with proration, coupons, refunds, and webhook syncing.",
   Razorpay: "Payment gateway integration and order checkout verification workflows.",
-  "HubSpot CRM": "High-volume portal webhook ingestion (30,000+/mo) and cursor-based syncing.",
+  "HubSpot CRM": "Serverless webhook ingestion (30,000+/mo) with batch cursor checkpointing and hash caching.",
   Jest: "Unit and integration test suites for APIs, business logic, and state.",
   Playwright: "End-to-end browser verification across critical user and checkout journeys.",
   Elasticsearch: "Full-text indexing, structured filtering, and fast search retrieval.",
   Algolia: "Instant hosted search experiences and typo-tolerant catalog indexing.",
   Docker: "Containerized local environments and reproducible service deployments.",
   n8n: "Workflow automation connecting APIs, webhooks, and operational pipelines.",
+  LLM: "Generative AI workflows, content-hash response caching, and integrations across OpenAI, Gemini, and LangChain.",
 };
 
 type UsageRef = {
   label: string;
   context: string;
   href: string;
+  projectTitle?: string;
 };
 
 function getSkillUsages(skill: string): UsageRef[] {
@@ -77,7 +86,7 @@ function getSkillUsages(skill: string): UsageRef[] {
         usages.push({
           label: item.name,
           context: job.company,
-          href: "#experience",
+          href: `#${toDeliverableId(item.name)}`,
         });
       }
     }
@@ -90,6 +99,7 @@ function getSkillUsages(skill: string): UsageRef[] {
         label: project.title,
         context: project.category,
         href: "#projects",
+        projectTitle: project.title,
       });
     }
   }
@@ -101,6 +111,28 @@ export function SkillsSection() {
   const [query, setQuery] = useState("");
   const [selectedSkill, setSelectedSkill] = useState<string>("TypeScript");
   const normalized = query.trim().toLowerCase();
+
+  useEffect(() => {
+    const onSelectSkill = (event: CustomEvent<{ skill?: string }>) => {
+      const requested = event.detail?.skill?.trim().toLowerCase();
+      if (!requested) return;
+      const matched = skillGroups
+        .flatMap((g) => g.items)
+        .find((item) => item.toLowerCase() === requested);
+      if (!matched) return;
+      setQuery("");
+      setSelectedSkill(matched);
+    };
+    window.addEventListener(
+      "portfolio:select-skill",
+      onSelectSkill as EventListener,
+    );
+    return () =>
+      window.removeEventListener(
+        "portfolio:select-skill",
+        onSelectSkill as EventListener,
+      );
+  }, []);
 
   const totalSkills = skillGroups.reduce(
     (sum, group) => sum + group.items.length,
@@ -150,6 +182,16 @@ export function SkillsSection() {
               type="text"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && normalized) {
+                  const first = skillGroups
+                    .flatMap((g) => g.items)
+                    .find((item) => item.toLowerCase().includes(normalized));
+                  if (first) setSelectedSkill(first);
+                } else if (event.key === "Escape" && query) {
+                  setQuery("");
+                }
+              }}
               placeholder="Filter stack..."
               aria-label="Filter technical skills"
               className="h-8 w-full border border-border bg-background pr-6 pl-7 font-mono text-[11px] text-foreground transition-all duration-200 placeholder:text-muted-foreground/70 focus:border-brand focus:outline-none sm:h-7 sm:w-36 sm:focus:w-44"
@@ -198,7 +240,7 @@ export function SkillsSection() {
                   type="button"
                   onClick={() => setSelectedSkill(driver.name)}
                   aria-pressed={active}
-                  className="w-full text-left focus-visible:outline-none"
+                  className="w-full text-left transition-transform duration-150 active:scale-[0.97] focus-visible:outline-none"
                 >
                   <SpotlightCard
                     className={`p-3 transition-all duration-150 ${
@@ -229,6 +271,20 @@ export function SkillsSection() {
 
         {/* Middle: Clean Edge-to-Edge Architecture Layers (zero empty card gaps) */}
         <div className="divide-y divide-border/70">
+          {matchingCount === 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 bg-muted/25 px-4 py-3 font-mono text-xs sm:px-6 animate-in fade-in-0 duration-150">
+              <span className="text-muted-foreground">
+                No stack items matched &ldquo;{query.trim()}&rdquo;.
+              </span>
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="border border-brand/50 bg-brand/10 px-2.5 py-1 text-[11px] font-semibold text-brand transition-colors hover:bg-brand hover:text-brand-foreground active:scale-95"
+              >
+                Reset filter
+              </button>
+            </div>
+          )}
           {skillGroups.map((group, idx) => {
             const Icon = group.icon;
             const groupMatched =
@@ -278,7 +334,7 @@ export function SkillsSection() {
                         type="button"
                         onClick={() => setSelectedSkill(item)}
                         aria-pressed={isSelected}
-                        className={`group/chip inline-flex items-center gap-2 border px-3 py-2 font-mono text-xs transition-all duration-150 focus-visible:outline-1 focus-visible:outline-brand sm:py-1.5 ${
+                        className={`group/chip inline-flex items-center gap-2 border px-3 py-2 font-mono text-xs transition-all duration-150 active:scale-95 focus-visible:outline-1 focus-visible:outline-brand sm:py-1.5 ${
                           isSelected
                             ? "border-brand bg-brand/12 text-foreground shadow-[2px_2px_0_var(--brand)]"
                             : isSearchMatch
@@ -311,8 +367,9 @@ export function SkillsSection() {
 
         {/* Bottom: Live Skill Context Inspector */}
         <div
+          key={selectedSkill}
           aria-live="polite"
-          className="flex flex-col justify-between gap-3 bg-muted/25 px-4 py-3.5 sm:px-6 lg:flex-row lg:items-center"
+          className="flex flex-col justify-between gap-3 bg-muted/25 px-4 py-3.5 animate-in fade-in-0 duration-150 sm:px-6 lg:flex-row lg:items-center"
         >
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border border-brand/50 bg-background">
@@ -343,7 +400,15 @@ export function SkillsSection() {
                 <a
                   key={`${usage.label}-${usage.context}`}
                   href={usage.href}
-                  className="inline-flex items-center gap-1 border border-border bg-background px-2 py-1 font-mono text-[11px] text-foreground transition-colors hover:border-brand hover:text-brand"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    if (usage.projectTitle) {
+                      selectAndScrollToProject(usage.projectTitle);
+                    } else {
+                      focusDeliverableCard(usage.label);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 border border-border bg-background px-2 py-1 font-mono text-[11px] text-foreground transition-all duration-150 hover:border-brand hover:text-brand active:scale-95"
                 >
                   <span>{usage.label}</span>
                   <ArrowDownRight className="h-3 w-3 text-brand" />

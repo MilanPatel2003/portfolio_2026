@@ -16,6 +16,7 @@ import {
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { WorkspaceFile } from "@/components/ui/workspace-file";
 import { hero } from "@/data/data";
+import { getMailtoHref, showToast } from "@/lib/events";
 import { site } from "@/lib/site";
 
 export function ContactSection() {
@@ -27,6 +28,11 @@ export function ContactSection() {
     try {
       await navigator.clipboard.writeText(value);
       setCopiedField(field);
+      showToast(
+        field === "email"
+          ? "Copied email to clipboard"
+          : "Copied mobile number to clipboard",
+      );
       setTimeout(() => setCopiedField(null), 2000);
     } catch {
       /* Fallback handled by native link */
@@ -67,7 +73,7 @@ export function ContactSection() {
               href={site.resumeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group/res inline-flex h-10 w-fit shrink-0 items-center gap-2 border border-brand bg-brand/10 px-4 font-space-mono text-xs font-semibold text-brand transition-colors hover:bg-brand hover:text-brand-foreground"
+              className="group/res inline-flex h-10 w-fit shrink-0 items-center gap-2 border border-brand bg-brand/10 px-4 font-space-mono text-xs font-semibold text-brand transition-all duration-150 hover:bg-brand hover:text-brand-foreground active:scale-95"
             >
               <FileText className="h-3.5 w-3.5" />
               <span>View Resume</span>
@@ -78,7 +84,7 @@ export function ContactSection() {
 
         <div className="mt-6 grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
           {/* Email Card */}
-          <SpotlightCard className="p-4">
+          <SpotlightCard className="p-4 hover:-translate-y-0.5">
             <div className="flex h-full flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 font-space-mono text-xs text-muted-foreground">
@@ -86,7 +92,7 @@ export function ContactSection() {
                   <span>Email</span>
                 </div>
                 <a
-                  href={`mailto:${hero.email}`}
+                  href={getMailtoHref(hero.email)}
                   className="mt-2 block break-all text-sm font-semibold text-foreground transition-colors hover:text-brand"
                 >
                   {hero.email}
@@ -94,7 +100,7 @@ export function ContactSection() {
               </div>
               <div className="mt-4 flex items-center gap-2">
                 <a
-                  href={`mailto:${hero.email}`}
+                  href={getMailtoHref(hero.email)}
                   className="group/send inline-flex items-center gap-1 font-space-mono text-xs text-brand hover:underline"
                 >
                   <span>Send email</span>
@@ -103,7 +109,7 @@ export function ContactSection() {
                 <button
                   type="button"
                   onClick={() => handleCopy("email", hero.email)}
-                  className="ml-auto inline-flex items-center gap-1 border border-border bg-background px-2 py-1 font-space-mono text-[11px] text-muted-foreground transition-colors hover:border-brand hover:text-foreground"
+                  className="ml-auto inline-flex items-center gap-1 border border-border bg-background px-2 py-1 font-space-mono text-[11px] text-muted-foreground transition-all duration-150 hover:border-brand hover:text-foreground active:scale-95"
                 >
                   {copiedField === "email" ? (
                     <>
@@ -122,7 +128,7 @@ export function ContactSection() {
           </SpotlightCard>
 
           {/* Phone Card */}
-          <SpotlightCard className="p-4">
+          <SpotlightCard className="p-4 hover:-translate-y-0.5">
             <div className="flex h-full flex-col justify-between">
               <div>
                 <div className="flex items-center gap-2 font-space-mono text-xs text-muted-foreground">
@@ -147,7 +153,7 @@ export function ContactSection() {
                 <button
                   type="button"
                   onClick={() => handleCopy("phone", hero.phone)}
-                  className="ml-auto inline-flex items-center gap-1 border border-border bg-background px-2 py-1 font-space-mono text-[11px] text-muted-foreground transition-colors hover:border-brand hover:text-foreground"
+                  className="ml-auto inline-flex items-center gap-1 border border-border bg-background px-2 py-1 font-space-mono text-[11px] text-muted-foreground transition-all duration-150 hover:border-brand hover:text-foreground active:scale-95"
                 >
                   {copiedField === "phone" ? (
                     <>
@@ -167,7 +173,7 @@ export function ContactSection() {
 
           {/* LinkedIn Card */}
           {linkedinLink && (
-            <SpotlightCard className="p-4">
+            <SpotlightCard className="p-4 hover:-translate-y-0.5">
               <a
                 href={linkedinLink.href}
                 target="_blank"
@@ -193,7 +199,7 @@ export function ContactSection() {
 
           {/* GitHub & Web Card */}
           {githubLink && (
-            <SpotlightCard className="p-4">
+            <SpotlightCard className="p-4 hover:-translate-y-0.5">
               <a
                 href={githubLink.href}
                 target="_blank"

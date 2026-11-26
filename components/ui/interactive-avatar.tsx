@@ -16,6 +16,13 @@ export function InteractiveAvatar() {
   const rightPupilRef = useRef<HTMLDivElement>(null);
   const [greetingIndex, setGreetingIndex] = useState(0);
   const [showGreeting, setShowGreeting] = useState(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -97,6 +104,8 @@ export function InteractiveAvatar() {
   function handleClick() {
     setShowGreeting(true);
     setGreetingIndex((prev) => (prev + 1) % GREETINGS.length);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => setShowGreeting(false), 3500);
   }
 
   return (
@@ -107,8 +116,8 @@ export function InteractiveAvatar() {
         aria-live="polite"
         className={`pointer-events-none mb-2 border border-brand/50 bg-popover px-3 py-1 font-mono text-xs text-popover-foreground shadow-md transition-all duration-200 ${
           showGreeting
-            ? "translate-y-0 opacity-100"
-            : "translate-y-1.5 opacity-0"
+            ? "translate-y-0 scale-100 opacity-100"
+            : "translate-y-1.5 scale-95 opacity-0"
         }`}
       >
         <span>{GREETINGS[greetingIndex]}</span>
@@ -118,10 +127,13 @@ export function InteractiveAvatar() {
       <button
         type="button"
         onClick={handleClick}
-        onMouseEnter={() => setShowGreeting(true)}
+        onMouseEnter={() => {
+          if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+          setShowGreeting(true);
+        }}
         onMouseLeave={() => setShowGreeting(false)}
         aria-label="Interactive developer avatar — click to cycle greeting"
-        className="group relative cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+        className="group relative cursor-pointer transition-transform duration-150 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
       >
         <div
           ref={containerRef}

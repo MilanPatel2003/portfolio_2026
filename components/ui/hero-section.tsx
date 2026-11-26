@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 import Image from "next/image";
 import {
   ArrowRight,
@@ -13,9 +13,11 @@ import {
   MapPin,
 } from "lucide-react";
 import { hero } from "@/data/data";
+import { getMailtoHref, showToast } from "@/lib/events";
 import { site } from "@/lib/site";
 
-type InspectorTab = "profile.ts" | "stack.json" | "status.sh";
+const INSPECTOR_TABS = ["profile.ts", "stack.json", "status.sh"] as const;
+type InspectorTab = (typeof INSPECTOR_TABS)[number];
 
 function useIndiaTime() {
   const [time, setTime] = useState<string>("");
@@ -66,12 +68,36 @@ export function HeroSection() {
     try {
       await navigator.clipboard.writeText(value);
       setCopied(type);
+      showToast(
+        type === "email"
+          ? "Copied email to clipboard"
+          : "Copied mobile number to clipboard",
+      );
       setTimeout(() => setCopied(null), 2000);
     } catch {
       window.location.href =
         type === "email"
-          ? `mailto:${value}`
+          ? getMailtoHref(value)
           : `tel:${value.replace(/\s+/g, "")}`;
+    }
+  }
+
+  function handleTabKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const idx = INSPECTOR_TABS.indexOf(activeTab);
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      setActiveTab(INSPECTOR_TABS[(idx + 1) % INSPECTOR_TABS.length]);
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      setActiveTab(
+        INSPECTOR_TABS[(idx - 1 + INSPECTOR_TABS.length) % INSPECTOR_TABS.length],
+      );
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      setActiveTab(INSPECTOR_TABS[0]);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      setActiveTab(INSPECTOR_TABS[INSPECTOR_TABS.length - 1]);
     }
   }
 
@@ -81,13 +107,14 @@ export function HeroSection() {
   return (
     <section
       id="top"
-      className="intro-stage-expand pt-4 pb-6 sm:pt-10 sm:pb-10"
+      className="intro-stage-expand scroll-mt-24 pt-4 pb-6 sm:pt-10 sm:pb-10"
     >
       <div className="grid items-start gap-6 sm:gap-8 lg:grid-cols-[1.3fr_1fr] lg:gap-10">
         {/* Left: Executive narrative & tactile CTAs */}
         <div className="min-w-0 space-y-5 sm:space-y-6">
           <div className="inline-flex flex-wrap items-center gap-2 border border-border bg-card/70 px-3 py-1.5 font-space-mono text-xs text-muted-foreground">
             <span className="relative flex h-2 w-2" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-70 motion-reduce:hidden" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
             </span>
             <Image
@@ -198,29 +225,29 @@ export function HeroSection() {
             <div
               role="tablist"
               aria-label="Profile inspector views"
+              onKeyDown={handleTabKeyDown}
               className="flex items-center gap-1"
             >
-              {(["profile.ts", "stack.json", "status.sh"] as const).map(
-                (tab) => {
-                  const active = activeTab === tab;
-                  return (
-                    <button
-                      key={tab}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => setActiveTab(tab)}
-                      className={`relative border-b-2 px-2.5 pb-2 pt-1 transition-colors duration-150 ${
-                        active
-                          ? "border-brand font-bold text-foreground"
-                          : "border-transparent text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      <span>{tab}</span>
-                    </button>
-                  );
-                },
-              )}
+              {INSPECTOR_TABS.map((tab) => {
+                const active = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    tabIndex={active ? 0 : -1}
+                    aria-selected={active}
+                    onClick={() => setActiveTab(tab)}
+                    className={`relative border-b-2 px-2.5 pb-2 pt-1 transition-all duration-150 active:scale-[0.97] focus-visible:outline-1 focus-visible:outline-brand ${
+                      active
+                        ? "border-brand font-bold text-foreground"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <span>{tab}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <span className="min-w-[80px] pb-1.5 text-right text-[10px] tabular-nums text-muted-foreground">
@@ -230,7 +257,7 @@ export function HeroSection() {
 
           <div className="min-h-[240px] overflow-x-auto p-3.5 font-space-mono text-[11px] leading-relaxed sm:min-h-[256px] sm:p-5 sm:text-[13px]">
             {activeTab === "profile.ts" && (
-              <div>
+              <div key="profile.ts" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-200">
                 <CodeLine lineNumber={1}>
                   <span className="workspace-comment">
                     {"// quick overview & direct contact"}
@@ -288,7 +315,7 @@ export function HeroSection() {
                 <CodeLine lineNumber={9}>
                   <span className="pl-4 text-muted-foreground">email:</span>{" "}
                   <a
-                    href={`mailto:${hero.email}`}
+                    href={getMailtoHref(hero.email)}
                     className="workspace-source-link"
                   >
                     &quot;{hero.email}&quot;
@@ -300,7 +327,7 @@ export function HeroSection() {
             )}
 
             {activeTab === "stack.json" && (
-              <div>
+              <div key="stack.json" className="animate-in fade-in-0 slide-in-from-bottom-1 duration-200">
                 <CodeLine lineNumber={1}>{"{"}</CodeLine>
                 <CodeLine lineNumber={2}>
                   <span className="pl-4 workspace-keyword">
@@ -308,6 +335,10 @@ export function HeroSection() {
                   </span>
                   : [
                   <span className="workspace-string">&quot;React&quot;</span>,{" "}
+                  <span className="workspace-string">
+                    &quot;Next.js&quot;
+                  </span>
+                  ,{" "}
                   <span className="workspace-string">
                     &quot;TypeScript&quot;
                   </span>
@@ -386,7 +417,7 @@ export function HeroSection() {
             )}
 
             {activeTab === "status.sh" && (
-              <div className="space-y-3">
+              <div key="status.sh" className="space-y-3 animate-in fade-in-0 slide-in-from-bottom-1 duration-200">
                 <CodeLine lineNumber={1}>
                   <span className="text-brand">$</span> whoami --summary
                 </CodeLine>
@@ -410,7 +441,7 @@ export function HeroSection() {
                   <button
                     type="button"
                     onClick={() => copyValue("email", hero.email)}
-                    className="inline-flex items-center gap-1.5 border border-border bg-background px-3 py-2 text-[11px] text-foreground transition-colors hover:border-brand hover:text-brand sm:px-2.5 sm:py-1"
+                    className="inline-flex items-center gap-1.5 border border-border bg-background px-3 py-2 text-[11px] text-foreground transition-all duration-150 hover:border-brand hover:text-brand active:scale-[0.97] sm:px-2.5 sm:py-1"
                   >
                     {copied === "email" ? (
                       <Check className="h-3 w-3 text-brand" />
@@ -424,7 +455,7 @@ export function HeroSection() {
                   <button
                     type="button"
                     onClick={() => copyValue("phone", hero.phone)}
-                    className="inline-flex items-center gap-1.5 border border-border bg-background px-3 py-2 text-[11px] text-foreground transition-colors hover:border-brand hover:text-brand sm:px-2.5 sm:py-1"
+                    className="inline-flex items-center gap-1.5 border border-border bg-background px-3 py-2 text-[11px] text-foreground transition-all duration-150 hover:border-brand hover:text-brand active:scale-[0.97] sm:px-2.5 sm:py-1"
                   >
                     {copied === "phone" ? (
                       <Check className="h-3 w-3 text-brand" />

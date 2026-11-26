@@ -133,7 +133,7 @@
   }
   html {
     scroll-behavior: smooth;
-    overflow-x: clip;
+    scrollbar-gutter: stable;
   }
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -142,13 +142,18 @@
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: clip;
   }
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
   }
+}
+
+/* Keep scrollbar gutter stable when Radix Dialog locks body scroll (prevents layout shift) */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
 }
 
 .no-scrollbar,
@@ -239,24 +244,54 @@
   .intro-curtain {
     transform: translate3d(0, 0, 0);
     will-change: transform;
-    animation: intro-curtain-lift 1.75s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    animation: intro-curtain-lift 1.15s cubic-bezier(0.76, 0, 0.24, 1) forwards;
   }
 
   .intro-curtain-hem {
     transform-origin: top center;
     transform: scaleY(1);
     will-change: transform;
-    animation: intro-curtain-hem-flatten 1.75s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    animation: intro-curtain-hem-flatten 1.15s cubic-bezier(0.76, 0, 0.24, 1) forwards;
   }
 
   .intro-curtain-mark {
     will-change: transform, opacity;
-    animation: intro-curtain-mark-fade 1.75s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+    animation: intro-curtain-mark-fade 1.15s cubic-bezier(0.76, 0, 0.24, 1) forwards;
   }
 
   .intro-stage-expand {
     transform-origin: top center;
-    animation: intro-hero-expand 1.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation: intro-hero-expand 1.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .workspace-reveal {
+    transition:
+      opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .workspace-reveal[data-reveal="hidden"] {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+
+  .workspace-reveal[data-reveal="visible"] {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .deliverable-anchor {
+    scroll-margin-top: 6rem;
+  }
+
+  .deliverable-anchor:target,
+  .deliverable-flash {
+    animation: deliverable-highlight 1.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .eq-bar {
+    transform-origin: bottom center;
+    animation: eq-bounce 0.85s ease-in-out infinite alternate;
   }
 }
 
@@ -273,7 +308,7 @@
 
 @keyframes intro-curtain-lift {
   0%,
-  18% {
+  14% {
     transform: translate3d(0, 0, 0);
   }
   100% {
@@ -283,7 +318,7 @@
 
 @keyframes intro-curtain-hem-flatten {
   0%,
-  18% {
+  14% {
     transform: scaleY(1);
   }
   100% {
@@ -293,38 +328,68 @@
 
 @keyframes intro-curtain-mark-fade {
   0%,
-  14% {
+  10% {
     opacity: 1;
     transform: translate3d(0, 0, 0);
   }
-  46%,
+  44%,
   100% {
     opacity: 0;
-    transform: translate3d(0, -14px, 0);
+    transform: translate3d(0, -12px, 0);
   }
 }
 
 @keyframes intro-hero-expand {
   0%,
-  20% {
-    transform: scale3d(0.972, 0.972, 1);
+  16% {
+    transform: scale3d(0.976, 0.976, 1);
   }
   100% {
     transform: scale3d(1, 1, 1);
   }
 }
 
+@keyframes deliverable-highlight {
+  0% {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px color-mix(in oklch, var(--brand) 38%, transparent);
+  }
+  100% {
+    border-color: var(--border);
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@keyframes eq-bounce {
+  0% {
+    transform: scaleY(0.32);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .avatar-blink-lid {
-    animation: none;
+  .avatar-blink-lid,
+  .eq-bar {
+    animation: none !important;
   }
 
   .intro-curtain {
     display: none !important;
   }
 
-  .intro-stage-expand {
+  .intro-stage-expand,
+  .deliverable-anchor:target,
+  .deliverable-flash {
     animation: none !important;
     transform: none !important;
+  }
+
+  .workspace-reveal,
+  .workspace-reveal[data-reveal="hidden"] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }

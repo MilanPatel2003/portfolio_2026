@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Command } from "cmdk";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
@@ -17,15 +17,25 @@ import {
   Music,
   Pause,
   Phone,
+  Sparkles,
   SunMoon,
 } from "lucide-react";
-import { hero } from "@/data/data";
+import { hero, projects } from "@/data/data";
+import {
+  LOFI_TRACKS,
+  openPortfolioChat,
+  pauseLofiMusic,
+  playLofiTrack,
+  selectAndScrollToProject,
+  showToast,
+} from "@/lib/events";
 import { site } from "@/lib/site";
 import { toggleDarkLightTheme } from "@/lib/theme";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [musicPlaying, setMusicPlaying] = useState<number | null>(null);
+  const skipAutoFocusRef = useRef(false);
 
   useEffect(() => {
     const show = () => setOpen(true);
@@ -52,7 +62,8 @@ export function CommandPalette() {
       window.removeEventListener("music:statechange", handler as EventListener);
   }, []);
 
-  const run = useCallback((fn: () => void) => {
+  const run = useCallback((fn: () => void, skipFocusRestore = false) => {
+    skipAutoFocusRef.current = skipFocusRestore;
     setOpen(false);
     fn();
   }, []);
@@ -60,22 +71,40 @@ export function CommandPalette() {
   const jumpTo = useCallback(
     (id: string) => {
       run(() => {
+        if (id === "top") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
         const el = document.getElementById(id);
         el?.scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      }, true);
     },
     [run],
   );
 
   const playTrack = useCallback((index: number) => {
     setOpen(false);
-    window.dispatchEvent(new CustomEvent("music:play", { detail: { index } }));
+    playLofiTrack(index);
+    showToast(`Playing: ${LOFI_TRACKS[index].name}`);
   }, []);
 
   const pauseMusic = useCallback(() => {
     setOpen(false);
-    window.dispatchEvent(new CustomEvent("music:pause"));
+    pauseLofiMusic();
+    showToast("Paused ambient music");
   }, []);
+
+  const copyWithToast = useCallback(
+    (value: string, label: string) => {
+      run(() => {
+        navigator.clipboard?.writeText(value).then(
+          () => showToast(`Copied ${label} to clipboard`),
+          () => showToast(`Failed to copy ${label}`),
+        );
+      });
+    },
+    [run],
+  );
 
   const toggleTheme = useCallback(() => {
     run(() => {
@@ -96,6 +125,12 @@ export function CommandPalette() {
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           aria-describedby={undefined}
+          onCloseAutoFocus={(event) => {
+            if (skipAutoFocusRef.current) {
+              event.preventDefault();
+              skipAutoFocusRef.current = false;
+            }
+          }}
           className="fixed left-1/2 top-[18%] z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
         >
           <DialogPrimitive.Title className="sr-only">
@@ -185,6 +220,18 @@ export function CommandPalette() {
 
               <Command.Group>
                 <GroupLabel>QUICK ACTIONS</GroupLabel>
+                <PaletteItem
+                  icon={<Sparkles className="h-3.5 w-3.5" />}
+                  hint="AI Chat"
+                  onSelect={() =>
+                    run(
+                      () => window.requestAnimationFrame(() => openPortfolioChat()),
+                      true,
+                    )
+                  }
+                >
+                  Ask AI Assistant about Milan
+                </PaletteItem>
                 {site.resumeUrl && (
                   <PaletteItem
                     icon={<FileText className="h-3.5 w-3.5" />}
@@ -205,18 +252,14 @@ export function CommandPalette() {
                 <PaletteItem
                   icon={<Copy className="h-3.5 w-3.5" />}
                   hint={hero.email}
-                  onSelect={() =>
-                    run(() => navigator.clipboard?.writeText(hero.email))
-                  }
+                  onSelect={() => copyWithToast(hero.email, "email")}
                 >
                   Copy Email Address
                 </PaletteItem>
                 <PaletteItem
                   icon={<Phone className="h-3.5 w-3.5" />}
                   hint={hero.phone}
-                  onSelect={() =>
-                    run(() => navigator.clipboard?.writeText(hero.phone))
-                  }
+                  onSelect={() => copyWithToast(hero.phone, "mobile number")}
                 >
                   Copy Mobile Number
                 </PaletteItem>
@@ -229,25 +272,33 @@ export function CommandPalette() {
               </Command.Group>
 
               <Command.Group>
+                <GroupLabel>PROJECTS</GroupLabel>
+                {projects.map((project) => (
+                  <PaletteItem
+                    key={project.title}
+                    icon={<FolderGit2 className="h-3.5 w-3.5" />}
+                    hint={project.category}
+                    keywords={[project.subtitle, ...project.tags]}
+                    onSelect={() =>
+                      run(() => selectAndScrollToProject(project.title), true)
+                    }
+                  >
+                    {project.title}
+                  </PaletteItem>
+                ))}
+              </Command.Group>
+
+              <Command.Group>
                 <GroupLabel>AMBIENT FOCUS MUSIC</GroupLabel>
-                <PaletteItem
-                  icon={<Music className="h-3.5 w-3.5" />}
-                  onSelect={() => playTrack(0)}
-                >
-                  Coffee Lofi Chill
-                </PaletteItem>
-                <PaletteItem
-                  icon={<Music className="h-3.5 w-3.5" />}
-                  onSelect={() => playTrack(1)}
-                >
-                  Good Night Lofi Cozy
-                </PaletteItem>
-                <PaletteItem
-                  icon={<Music className="h-3.5 w-3.5" />}
-                  onSelect={() => playTrack(2)}
-                >
-                  Study Calm Peaceful
-                </PaletteItem>
+                {LOFI_TRACKS.map((track, index) => (
+                  <PaletteItem
+                    key={track.src}
+                    icon={<Music className="h-3.5 w-3.5" />}
+                    onSelect={() => playTrack(index)}
+                  >
+                    {track.name}
+                  </PaletteItem>
+                ))}
               </Command.Group>
 
               <Command.Group>
@@ -304,17 +355,20 @@ function PaletteItem({
   icon,
   children,
   hint,
+  keywords,
   onSelect,
 }: {
   icon?: React.ReactNode;
   children: React.ReactNode;
   hint?: string;
+  keywords?: string[];
   onSelect?: () => void;
 }) {
   return (
     <Command.Item
+      keywords={keywords}
       onSelect={onSelect}
-      className="group mx-2 flex cursor-pointer items-center gap-3 px-3 py-2 text-xs text-muted-foreground data-[selected=true]:bg-accent data-[selected=true]:text-brand"
+      className="group mx-2 flex cursor-pointer items-center gap-3 px-3 py-2 text-xs text-muted-foreground transition-colors duration-100 data-[selected=true]:bg-accent data-[selected=true]:text-brand"
     >
       {icon && (
         <span className="text-muted-foreground group-data-[selected=true]:text-brand">
