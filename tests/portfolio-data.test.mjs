@@ -32,6 +32,8 @@ const siteConfig = loadTs("../lib/site.ts");
 
 test("site config points to Milan Patel and has no leftover template author references", () => {
   assert.equal(siteConfig.site.name, "Milan Patel");
+  assert.match(siteConfig.site.title, /Milan Patel Portfolio/i);
+  assert.match(siteConfig.site.description, /Portfolio of Milan Patel/i);
   assert.equal(siteConfig.site.githubUsername, "MilanPatel2003");
   assert.match(siteConfig.site.url.href, /milanpatel\.vercel\.app/);
 });
